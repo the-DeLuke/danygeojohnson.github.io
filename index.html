@@ -3,407 +3,463 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dany Geo Johnson | Surveillance HUD</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>DANY_OS // Cyber Defense Terminal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   /* =========================================
-     GLOBAL & TACTICAL VARIABLES
+     SYSTEM VARIABLES & BASE
   ========================================= */
   :root {
-    --bg-color: #030504;
-    --hud-color: #00ff66; /* Tactical Green */
-    --hud-alert: #ff0033; /* Alert Red */
-    --hud-cyan: #00e5ff;  /* Info Cyan */
-    --hud-dim: rgba(0, 255, 102, 0.2);
-    --hud-bg: rgba(0, 10, 5, 0.85);
-    --font-hud: 'Share Tech Mono', monospace;
+    --sys-bg: #0d1117;
+    --sys-accent: #00ffcc;
+    --sys-text: #c9d1d9;
+    --sys-panel: #161b22;
+    --sys-border: #30363d;
+    --sys-red: #ff5555;
+    --sys-yellow: #f1fa8c;
+    --font-ui: 'Ubuntu', sans-serif;
+    --font-term: 'Fira Code', monospace;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; cursor: none !important; }
+  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
   
   body {
-    background-color: var(--bg-color);
-    color: var(--hud-color);
-    font-family: var(--font-hud);
-    overflow-x: hidden;
-    user-select: none;
+    background-color: var(--sys-bg);
+    color: var(--sys-text);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    width: 100vw; height: 100vh;
   }
 
-  /* =========================================
-     CAMERA LENS EFFECTS & SCANLINES
-  ========================================= */
-  body::before {
-    content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
-    pointer-events: none; z-index: 9998; opacity: 0.8;
-  }
+  /* Scanline Overlay */
   body::after {
-    content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-    pointer-events: none; z-index: 9997;
+    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none;
   }
-  
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--hud-color); }
 
   /* =========================================
-     STATIC HUD OVERLAY (CORNERS)
+     BOOT SEQUENCE
   ========================================= */
-  .hud-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9990; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; }
-  
-  .hud-row { display: flex; justify-content: space-between; align-items: flex-start; }
-  
-  /* Corner Brackets */
-  .bracket { position: absolute; width: 50px; height: 50px; border: 2px solid var(--hud-color); opacity: 0.5; }
-  .br-tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
-  .br-tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
-  .br-bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
-  .br-br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
-
-  /* HUD Text Elements */
-  .hud-text { font-size: 0.9rem; text-shadow: 0 0 5px var(--hud-color); }
-  .hud-alert { color: var(--hud-alert); text-shadow: 0 0 5px var(--hud-alert); }
-  .hud-cyan { color: var(--hud-cyan); text-shadow: 0 0 5px var(--hud-cyan); }
-  
-  .rec-indicator { display: flex; align-items: center; gap: 10px; }
-  .rec-dot { width: 12px; height: 12px; background: var(--hud-alert); border-radius: 50%; box-shadow: 0 0 10px var(--hud-alert); animation: blink 1s infinite; }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-  .telemetry-bar { width: 150px; height: 4px; background: var(--hud-dim); margin-top: 5px; position: relative; }
-  .telemetry-fill { position: absolute; top: 0; left: 0; height: 100%; width: 78%; background: var(--hud-color); }
-
-  /* Crosshair Center (Faint) */
-  .center-cross { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 300px; pointer-events: none; opacity: 0.1; }
-  .center-cross::before { content: ''; position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: var(--hud-color); }
-  .center-cross::after { content: ''; position: absolute; top: 0; left: 50%; width: 1px; height: 100%; background: var(--hud-color); }
+  #boot-screen {
+    position: fixed; inset: 0; background: #000; color: #0f0;
+    font-family: var(--font-term); font-size: 14px; padding: 20px;
+    z-index: 10000; display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .boot-line { margin-bottom: 5px; opacity: 0; animation: typeLine 0.1s forwards; }
+  @keyframes typeLine { to { opacity: 1; } }
+  #boot-screen.hidden { animation: fadeOut 0.5s forwards; pointer-events: none; }
+  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
   /* =========================================
-     DYNAMIC DYNAMIC VIEWFINDER (CURSOR)
+     DESKTOP ENVIRONMENT
   ========================================= */
-  #viewfinder {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 60px; height: 60px; pointer-events: none; z-index: 9999;
-    transition: width 0.2s, height 0.2s, border-color 0.2s;
+  #desktop {
+    position: relative; width: 100%; height: calc(100vh - 30px);
+    background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+    overflow: hidden;
   }
-  /* The 4 corners of the focus box */
-  #viewfinder::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 1.5px solid var(--hud-cyan); opacity: 0.7; clip-path: polygon(0 0, 20% 0, 20% 10%, 10% 10%, 10% 20%, 0 20%, 0 80%, 10% 80%, 10% 90%, 20% 90%, 20% 100%, 0 100%, 80% 100%, 80% 90%, 90% 90%, 90% 80%, 100% 80%, 100% 20%, 90% 20%, 90% 10%, 80% 10%, 80% 0, 100% 0); }
   
-  .center-dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background: var(--hud-cyan); }
+  /* Taskbar */
+  #taskbar {
+    height: 30px; background: rgba(13, 17, 23, 0.95); border-top: 1px solid var(--sys-border);
+    display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
+    font-size: 13px; z-index: 5000; position: relative; backdrop-filter: blur(5px);
+  }
+  .tb-left { font-weight: 700; color: var(--sys-accent); letter-spacing: 1px; }
+  .tb-right { display: flex; gap: 15px; color: #8b949e; }
 
-  /* Locked Target State */
-  #viewfinder.locked { width: 40px; height: 40px; }
-  #viewfinder.locked::before { border-color: var(--hud-alert); opacity: 1; box-shadow: inset 0 0 10px rgba(255,0,51,0.5); }
-  #viewfinder.locked .center-dot { background: var(--hud-alert); }
+  /* Desktop Icons */
+  #icons {
+    display: flex; flex-direction: column; gap: 20px; padding: 20px; float: left;
+  }
+  .icon {
+    width: 80px; display: flex; flex-direction: column; align-items: center;
+    gap: 8px; cursor: pointer; border-radius: 5px; padding: 10px;
+    transition: background 0.2s;
+  }
+  .icon:hover { background: rgba(255,255,255,0.1); }
+  .icon-img { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+  .icon-text { font-size: 12px; text-shadow: 1px 1px 2px #000; text-align: center; }
+
+  /* Executive Escape Hatch */
+  .escape-hatch {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255, 85, 85, 0.1); border: 1px solid var(--sys-red);
+    color: var(--sys-red); padding: 10px 20px; border-radius: 4px;
+    font-family: var(--font-term); font-size: 12px; font-weight: bold;
+    cursor: pointer; text-decoration: none; z-index: 4000;
+    transition: all 0.2s; box-shadow: 0 0 15px rgba(255,85,85,0.1);
+  }
+  .escape-hatch:hover {
+    background: var(--sys-red); color: #000; box-shadow: 0 0 20px rgba(255,85,85,0.4);
+  }
 
   /* =========================================
-     CONTENT LAYOUT (THE DATABANKS)
+     WINDOW SYSTEM
   ========================================= */
-  .container { max-width: 1000px; margin: 0 auto; padding: 120px 20px; position: relative; z-index: 10; }
+  .window {
+    position: absolute; width: 650px; max-width: 95vw; background: var(--sys-panel);
+    border: 1px solid var(--sys-border); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    display: none; flex-direction: column; overflow: hidden; z-index: 100;
+  }
+  .window.active { display: flex; }
   
-  .section-title { font-size: 1.2rem; margin-bottom: 30px; display: inline-block; border-bottom: 1px solid var(--hud-color); padding-bottom: 5px; opacity: 0.8; }
-  .section-title::before { content: '>> '; color: var(--hud-cyan); }
-
-  /* Hero Targeting Screen */
-  .target-profile { display: flex; flex-direction: column; gap: 20px; margin-bottom: 100px; border-left: 2px solid var(--hud-cyan); padding-left: 20px; }
-  .target-name { font-size: clamp(3rem, 6vw, 5rem); line-height: 1; color: #fff; text-shadow: 0 0 15px rgba(255,255,255,0.3); }
-  .target-class { font-size: 1.5rem; color: var(--hud-cyan); letter-spacing: 2px; }
-  .target-desc { max-width: 600px; font-size: 1rem; color: #aaa; line-height: 1.6; }
-
-  /* Interactive Data Nodes (Hover Targets) */
-  .data-node {
-    background: var(--hud-bg); border: 1px solid var(--hud-dim);
-    padding: 25px; margin-bottom: 20px; position: relative;
-    transition: all 0.3s; overflow: hidden;
+  .win-header {
+    background: #0d1117; padding: 8px 15px; display: flex; justify-content: space-between;
+    align-items: center; border-bottom: 1px solid var(--sys-border); cursor: grab;
   }
-  .data-node::before {
-    content: 'AQUIRING...'; position: absolute; top: 50%; left: -100%; transform: translateY(-50%);
-    font-size: 3rem; color: rgba(255,0,51,0.05); font-weight: bold; pointer-events: none; transition: 0.5s;
+  .win-header:active { cursor: grabbing; }
+  .win-title { font-size: 13px; font-weight: 500; color: #8b949e; font-family: var(--font-term); }
+  .win-controls { display: flex; gap: 8px; }
+  .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-close { background: var(--sys-red); }
+  .btn-min { background: var(--sys-yellow); }
+  .btn-max { background: #50fa7b; }
+
+  .win-content {
+    flex: 1; padding: 20px; overflow-y: auto; height: 450px;
+    font-family: var(--font-term); font-size: 14px; line-height: 1.6;
+    color: var(--sys-text); user-select: text;
   }
-  .data-node:hover { border-color: var(--hud-cyan); box-shadow: 0 0 20px rgba(0, 229, 255, 0.1); background: rgba(0, 229, 255, 0.05); transform: translateX(10px); }
-  .data-node:hover::before { left: 10%; }
+  .win-content::-webkit-scrollbar { width: 8px; }
+  .win-content::-webkit-scrollbar-track { background: var(--sys-bg); }
+  .win-content::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
 
-  .node-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid var(--hud-dim); padding-bottom: 10px; }
-  .node-title { font-size: 1.2rem; color: #fff; }
-  .node-meta { color: var(--hud-cyan); font-size: 0.85rem; }
-  .node-body { color: #aaa; font-size: 0.95rem; line-height: 1.5; }
-  .node-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-  .tag { padding: 4px 8px; background: var(--hud-dim); font-size: 0.8rem; color: var(--hud-color); }
-
-  /* Skills Grid */
-  .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 80px; }
-  .skill-node { display: flex; justify-content: space-between; padding: 15px; background: var(--hud-bg); border: 1px solid var(--hud-dim); transition: 0.3s; }
-  .skill-node:hover { border-color: var(--hud-color); background: rgba(0, 255, 102, 0.1); }
-
-  /* Contact & Transmission */
-  .contact-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
-  @media (min-width: 768px) { .contact-grid { grid-template-columns: 1fr 1.5fr; } }
+  /* =========================================
+     SPECIFIC APPS
+  ========================================= */
+  /* Terminal */
+  #win-terminal .win-content { background: rgba(5, 5, 10, 0.95); color: #00ff00; }
+  .term-prompt { color: var(--sys-accent); font-weight: bold; }
+  .term-path { color: #bd93f9; }
   
-  .contact-info { display: flex; flex-direction: column; gap: 20px; }
-  .info-group { display: flex; flex-direction: column; }
-  .info-label { font-size: 0.8rem; color: var(--hud-cyan); margin-bottom: 5px; opacity: 0.8; }
-  .info-val { font-size: 1.1rem; color: #fff; text-decoration: none; transition: 0.3s; }
-  .info-val:hover { color: var(--hud-alert); padding-left: 10px; }
+  /* Resume (Text Editor) */
+  #win-resume .win-content { background: #1e1e1e; color: #d4d4d4; font-size: 13px; }
+  .kw { color: #569cd6; font-weight: bold; } /* keyword */
+  .str { color: #ce9178; } /* string */
+  .fn { color: #dcdcaa; } /* function */
+  .cmt { color: #6a9955; font-style: italic; } /* comment */
+  .prop { color: #9cdcfe; } /* property */
 
-  /* Terminal Form */
-  .terminal-form { background: rgba(0,0,0,0.5); border: 1px solid var(--hud-color); padding: 25px; }
-  .terminal-form input, .terminal-form textarea {
-    width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--hud-dim);
-    color: var(--hud-color); font-family: var(--font-hud); padding: 10px 0; margin-bottom: 25px;
-    font-size: 1rem;
+  /* Projects (File Explorer) */
+  #win-projects .win-content { 
+    background: #0d1117; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 20px; align-content: flex-start; 
   }
-  .terminal-form input:focus, .terminal-form textarea:focus { outline: none; border-bottom-color: var(--hud-cyan); }
-  .terminal-form textarea { resize: vertical; min-height: 80px; }
-  .btn-transmit {
-    background: var(--hud-dim); border: 1px solid var(--hud-color); color: var(--hud-color);
-    padding: 12px 20px; font-family: var(--font-hud); font-size: 1rem; text-transform: uppercase;
-    width: 100%; transition: 0.3s;
+  .folder { 
+    background: #161b22; border: 1px solid var(--sys-border); padding: 15px; 
+    border-radius: 6px; text-align: left; cursor: pointer; transition: 0.2s; position: relative;
+    text-decoration: none; color: var(--sys-text); display: block;
   }
-  .btn-transmit:hover { background: var(--hud-color); color: #000; box-shadow: 0 0 15px var(--hud-color); }
+  .folder:hover { border-color: var(--sys-accent); background: #1f2428; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,255,204,0.1); }
+  .folder-icon { font-size: 30px; margin-bottom: 10px; }
+  .folder-name { font-size: 13px; font-family: var(--font-term); font-weight: bold; color: var(--sys-accent); margin-bottom: 5px; }
+  .folder-desc { font-size: 11px; font-family: var(--font-ui); color: #8b949e; line-height: 1.4; }
+
+  /* Mail (Contact) */
+  #win-mail { width: 450px; }
+  .mail-form { display: flex; flex-direction: column; gap: 15px; font-family: var(--font-ui); }
+  .mail-input { background: #0d1117; border: 1px solid var(--sys-border); color: #fff; padding: 10px; border-radius: 4px; font-family: var(--font-ui); }
+  .mail-input:focus { outline: none; border-color: var(--sys-accent); }
+  textarea.mail-input { min-height: 100px; resize: none; }
+  .mail-btn { background: var(--sys-text); color: #000; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .mail-btn:hover { background: var(--sys-accent); box-shadow: 0 0 10px rgba(0,255,204,0.3); }
+  .contact-block { background: #0d1117; border: 1px solid var(--sys-border); padding: 15px; border-radius: 4px; margin-bottom: 20px; font-family: var(--font-term); font-size: 12px; color: #8b949e; }
+  .contact-block span { color: #fff; display: block; margin-bottom: 5px; font-size: 14px; }
 
 </style>
 </head>
 <body>
 
-<div id="viewfinder">
-  <div class="center-dot"></div>
-</div>
-
-<div class="hud-overlay">
-  <div class="br-tl bracket"></div>
-  <div class="br-tr bracket"></div>
-  <div class="br-bl bracket"></div>
-  <div class="br-br bracket"></div>
-  <div class="center-cross"></div>
-
-  <div class="hud-row">
-    <div class="rec-indicator">
-      <div class="rec-dot"></div>
-      <span class="hud-alert hud-text">REC <span id="timecode">00:00:00:00</span></span>
-    </div>
-    <div style="text-align: right;">
-      <div class="hud-text">SYS.BAT: <span class="hud-cyan">78%</span></div>
-      <div class="telemetry-bar"><div class="telemetry-fill"></div></div>
-    </div>
+  <div id="boot-screen">
+    <div id="boot-log"></div>
   </div>
 
-  <div class="hud-row">
-    <div>
-      <div class="hud-text">ISO <span id="hud-iso">3200</span></div>
-      <div class="hud-text">F/ <span id="hud-aperture">2.8</span></div>
-    </div>
-    <div style="text-align: right;">
-      <div class="hud-text hud-cyan" id="hud-status">TGT_SEARCHING...</div>
-      <div class="hud-text">AF-C | AWB</div>
-      <div class="hud-text" id="coords">LAT: -- | LNG: --</div>
-    </div>
-  </div>
-</div>
-
-<main class="container">
-  
-  <div class="target-profile interactable" data-type="PRIMARY_TARGET" data-iso="6400" data-ap="1.4">
-    <div class="hud-text" style="color: #aaa;">IDENTIFICATION LOG</div>
-    <h1 class="target-name">DANY GEO JOHNSON</h1>
-    <h2 class="target-class">[ SOC ANALYST_ ]</h2>
-    <p class="target-desc">Detail-oriented professional with hands-on experience in SOC Operations, SIEM monitoring, and cyber security incident management within a 24x7x365 environment. Proven ability to perform security event monitoring, alert analysis, and low to medium severity incident triage meeting defined SLAs.</p>
-  </div>
-
-  <h3 class="section-title">SYS.MODULES.SKILLS</h3>
-  <div class="skills-grid">
-    <div class="skill-node interactable" data-type="ANALYSIS_MODULE" data-iso="800" data-ap="4.0">
-      <span>SOC Operations L1/L2</span><span class="hud-cyan">95%</span>
-    </div>
-    <div class="skill-node interactable" data-type="ANALYSIS_MODULE" data-iso="800" data-ap="4.0">
-      <span>SIEM (Splunk/Wazuh)</span><span class="hud-cyan">88%</span>
-    </div>
-    <div class="skill-node interactable" data-type="DEFENSE_MODULE" data-iso="1200" data-ap="5.6">
-      <span>Incident Response</span><span class="hud-cyan">90%</span>
-    </div>
-    <div class="skill-node interactable" data-type="DEFENSE_MODULE" data-iso="1200" data-ap="5.6">
-      <span>Threat & PCAP Analysis</span><span class="hud-cyan">85%</span>
-    </div>
-    <div class="skill-node interactable" data-type="THREAT_MODULE" data-iso="1600" data-ap="8.0">
-      <span>Network & Endpoint Sec</span><span class="hud-cyan">82%</span>
-    </div>
-    <div class="skill-node interactable" data-type="THREAT_MODULE" data-iso="1600" data-ap="8.0">
-      <span>OWASP / VAPT Basics</span><span class="hud-cyan">75%</span>
-    </div>
-  </div>
-
-  <h3 class="section-title">SYS.RECORDS.EXPERIENCE</h3>
-  <div class="data-node interactable" data-type="CAREER_LOG" data-iso="400" data-ap="2.8">
-    <div class="node-header">
-      <div class="node-title">Cybersecurity Analyst Intern</div>
-      <div class="node-meta">CODTECH IT SOLUTIONS // Aug 2025 - Dec 2025</div>
-    </div>
-    <div class="node-body">
-      > Performed SOC L1 operations: security event monitoring, alert analysis, and incident triage.<br>
-      > Investigated low/medium severity incidents via playbooks and SLA requirements.<br>
-      > Utilized Splunk & Wazuh for log analysis, correlation, and case management.<br>
-      > Escalated complex incidents to L2/L3 teams per procedures.
-    </div>
-    <div class="node-tags">
-      <span class="tag">SOC Ops</span><span class="tag">SIEM</span><span class="tag">Incident Triage</span>
-    </div>
-  </div>
-
-  <h3 class="section-title" style="margin-top: 60px;">SYS.FILES.PROJECTS</h3>
-  <div class="data-node interactable" data-type="PROJECT_FILE" data-iso="3200" data-ap="1.8">
-    <div class="node-header">
-      <div class="node-title">Wazuh - Security Monitoring</div>
-      <div class="node-meta">STATUS: DEPLOYED</div>
-    </div>
-    <div class="node-body">Implemented Wazuh-based monitoring for enterprise and cloud-based environments. Supported risk assessment and security architecture evaluation aligned with Certification & Accreditation standards.</div>
-    <div class="node-tags"><span class="tag">Wazuh</span><span class="tag">Cloud Security</span></div>
-  </div>
-
-  <div class="data-node interactable" data-type="PROJECT_FILE" data-iso="3200" data-ap="1.8">
-    <div class="node-header">
-      <div class="node-title">Network Intrusion Detection (Snort)</div>
-      <div class="node-meta">STATUS: DEPLOYED</div>
-    </div>
-    <div class="node-body">Deployed and configured Snort IDS to detect malicious activity across layered (n-tier) systems. Mapped attack patterns to MITRE ATT&CK and analyzed associated risk impact.</div>
-    <div class="node-tags"><span class="tag">Snort IDS</span><span class="tag">MITRE ATT&CK</span></div>
-  </div>
-
-  <div class="data-node interactable" data-type="PROJECT_FILE" data-iso="3200" data-ap="1.8">
-    <div class="node-header">
-      <div class="node-title">File Integrity Monitoring Tool</div>
-      <div class="node-meta">STATUS: DEVELOPED</div>
-    </div>
-    <div class="node-body">Developed a File Integrity Monitoring solution supporting secure configuration validation. Generated alerts and validated remediation during simulated attack and red teaming scenarios.</div>
-    <div class="node-tags"><span class="tag">FIM</span><span class="tag">Red Teaming</span></div>
-  </div>
-
-  <h3 class="section-title" style="margin-top: 60px;">SYS.NETWORK.TRANSMISSION</h3>
-  <div class="contact-grid">
+  <div id="desktop">
     
-    <div class="contact-info interactable" data-type="COMMS_LINK" data-iso="100" data-ap="11.0">
-      <div class="info-group">
-        <span class="info-label">EMAIL_ADDRESS</span>
-        <a href="mailto:danygeo13@gmail.com" class="info-val">danygeo13@gmail.com</a>
+    <a href="Dany_Geo_Johnson_Resume.pdf" target="_blank" class="escape-hatch">
+      [ DOWNLOAD RAW_RESUME.PDF ]
+    </a>
+
+    <div id="icons">
+      <div class="icon" ondblclick="openWindow('win-terminal')">
+        <div class="icon-img">💻</div>
+        <div class="icon-text">terminal</div>
       </div>
-      <div class="info-group">
-        <span class="info-label">PHONE_COMM</span>
-        <span class="info-val">+91 9526905931</span>
+      <div class="icon" ondblclick="openWindow('win-resume')">
+        <div class="icon-img">📝</div>
+        <div class="icon-text">sys_profile.json</div>
       </div>
-      <div class="info-group">
-        <span class="info-label">LINKEDIN_PROFILE</span>
-        <a href="https://linkedin.com/in/dany-geo-johnson" target="_blank" class="info-val">linkedin.com/in/dany-geo-johnson</a>
+      <div class="icon" ondblclick="openWindow('win-projects')">
+        <div class="icon-img">📁</div>
+        <div class="icon-text">/opt/projects/</div>
       </div>
-      <div class="info-group">
-        <span class="info-label">PHYSICAL_LOCATION</span>
-        <span class="info-val">Kollam, Kerala</span>
+      <div class="icon" ondblclick="openWindow('win-mail')">
+        <div class="icon-img">✉️</div>
+        <div class="icon-text">secure_comm.exe</div>
       </div>
     </div>
 
-    <div class="terminal-form interactable" data-type="ENCRYPTED_UPLINK" data-iso="6400" data-ap="1.2">
-      <div class="hud-text" style="margin-bottom: 20px; border-bottom: 1px solid var(--hud-color); display: inline-block;">> SECURE_CHANNEL_OPEN</div>
-      <form action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
-        <input type="text" name="name" placeholder="[ ENTER ID ]" required>
-        <input type="email" name="email" placeholder="[ ENTER COMM LINK ]" required>
-        <textarea name="message" placeholder="[ ENTER PAYLOAD DATA ]" required></textarea>
-        <button type="submit" class="btn-transmit">INITIATE TRANSMISSION</button>
-      </form>
+    <div class="window" id="win-terminal" style="top: 80px; left: 120px;">
+      <div class="win-header">
+        <div class="win-title">dany@soc-core:~</div>
+        <div class="win-controls">
+          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-terminal')"></div>
+        </div>
+      </div>
+      <div class="win-content" id="term-content">
+        </div>
     </div>
 
-  </div>
-  
-  <div style="text-align: center; margin-top: 100px; opacity: 0.5; font-size: 0.8rem;">
-    SYS.END // Dany Geo Johnson © 2025 // SOC.CEH
+    <div class="window" id="win-resume" style="top: 40px; left: 180px;">
+      <div class="win-header">
+        <div class="win-title">vscode - sys_profile.json</div>
+        <div class="win-controls">
+          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-resume')"></div>
+        </div>
+      </div>
+      <div class="win-content">
+<pre>
+{
+  <span class="prop">"target_profile"</span>: {
+    <span class="prop">"name"</span>: <span class="str">"Dany Geo Johnson"</span>,
+    <span class="prop">"role"</span>: <span class="str">"SOC Analyst"</span>,
+    <span class="prop">"certifications"</span>: [<span class="str">"CEH"</span>, <span class="str">"Adv. Diploma Cyber Defense"</span>]
+  },
+
+  <span class="cmt">/* * EXECUTIVE SUMMARY:
+   * SOC Analyst with hands-on experience in 24x7x365 SIEM 
+   * monitoring (Splunk, Wazuh) and incident triage. Proven 
+   * ability to analyze security events, validate vulnerabilities 
+   * against OWASP Top 10, and map adversarial behavior to the 
+   * MITRE ATT&CK framework to reduce organizational risk.
+   */</span>
+
+  <span class="prop">"experience_logs"</span>: [
+    {
+      <span class="prop">"company"</span>: <span class="str">"CODTECH IT SOLUTIONS"</span>,
+      <span class="prop">"title"</span>: <span class="str">"Cybersecurity Analyst Intern"</span>,
+      <span class="prop">"timeline"</span>: <span class="str">"Aug 2025 - Dec 2025"</span>,
+      <span class="prop">"execution_metrics"</span>: [
+        <span class="str">"Monitored and triaged low-to-medium security alerts daily using Splunk and Wazuh, maintaining strict SLA compliance."</span>,
+        <span class="str">"Escalated high-fidelity incidents to L2/L3 engineering teams, reducing false-positive fatigue."</span>,
+        <span class="str">"Maintained SIEM/CDC work logs to support audit trails and quality reviews."</span>
+      ]
+    }
+  ],
+
+  <span class="prop">"technical_stack"</span>: {
+    <span class="prop">"SIEM_Tools"</span>: [<span class="str">"Splunk"</span>, <span class="str">"Wazuh"</span>],
+    <span class="prop">"Threat_Hunting"</span>: [<span class="str">"Wireshark"</span>, <span class="str">"PCAP Analysis"</span>, <span class="str">"Snort IDS"</span>],
+    <span class="prop">"Frameworks"</span>: [<span class="str">"MITRE ATT&CK"</span>, <span class="str">"OWASP Top 10"</span>]
+  }
+}
+</pre>
+      </div>
+    </div>
+
+    <div class="window" id="win-projects" style="top: 130px; left: 250px;">
+      <div class="win-header">
+        <div class="win-title">/opt/projects/ - Click to access repositories</div>
+        <div class="win-controls">
+          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-projects')"></div>
+        </div>
+      </div>
+      <div class="win-content">
+        
+        <a href="https://github.com/your-username/wazuh-repo" target="_blank" class="folder">
+          <div class="folder-icon">🛡️</div>
+          <div class="folder-name">Wazuh_Deployment</div>
+          <div class="folder-desc">Implemented Wazuh-based monitoring for enterprise environments. Configured custom decoders and rules for risk assessment.</div>
+        </a>
+        
+        <a href="https://github.com/your-username/snort-repo" target="_blank" class="folder">
+          <div class="folder-icon">🕸️</div>
+          <div class="folder-name">Snort_IDS_Rules</div>
+          <div class="folder-desc">Deployed Snort IDS to detect malicious activity. Wrote custom rules mapped directly to specific MITRE ATT&CK techniques.</div>
+        </a>
+        
+        <a href="https://github.com/your-username/fim-repo" target="_blank" class="folder">
+          <div class="folder-icon">📁</div>
+          <div class="folder-name">FIM_Hash_Tool</div>
+          <div class="folder-desc">Developed a File Integrity Monitor utilizing SHA-256 hashing to detect unauthorized baseline modifications in real-time.</div>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="window" id="win-mail" style="top: 60px; left: 350px;">
+      <div class="win-header">
+        <div class="win-title">secure_comm.exe - Establish Uplink</div>
+        <div class="win-controls">
+          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-mail')"></div>
+        </div>
+      </div>
+      <div class="win-content">
+        <div class="contact-block">
+          EMAIL_ADDRESS <br><span><a href="mailto:danygeo13@gmail.com" style="color:var(--sys-accent); text-decoration:none;">danygeo13@gmail.com</a></span>
+          PHONE_COMM <br><span>+91 9526905931</span>
+          LINKEDIN_PROFILE <br><span><a href="https://linkedin.com/in/dany-geo-johnson" target="_blank" style="color:var(--sys-accent); text-decoration:none;">linkedin.com/in/dany-geo-johnson</a></span>
+        </div>
+
+        <form class="mail-form" action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
+          <input type="text" name="name" class="mail-input" placeholder="Origin ID (Name/Company)" required>
+          <input type="email" name="email" class="mail-input" placeholder="Return Address (Email)" required>
+          <textarea name="message" class="mail-input" placeholder="Enter encrypted payload details here..." required></textarea>
+          <button type="submit" class="mail-btn">EXECUTE TRANSMISSION</button>
+        </form>
+      </div>
+    </div>
   </div>
 
-</main>
+  <div id="taskbar">
+    <div class="tb-left">DANY_OS // KERNEL v2.0</div>
+    <div class="tb-right">
+      <span id="tb-time">00:00</span>
+      <span>📶 SECURE</span>
+      <span>🔋 100%</span>
+    </div>
+  </div>
 
 <script>
   /* =========================================
-     HUD DYNAMICS & JAVASCRIPT LOGIC
+     BOOT SEQUENCE LOGIC
   ========================================= */
+  const bootLines = [
+    "BIOS Check .............................. OK",
+    "Loading Kernel .......................... OK",
+    "Mounting Root File System ............... OK",
+    "Initializing Hardware ................... OK",
+    "Starting Security Protocols ............. OK",
+    "Starting SOC Monitoring Daemon .......... OK",
+    "Checking SIEM Connections ............... [SPLUNK: OK] [WAZUH: OK]",
+    "Loading User Interface .................. OK",
+    "Welcome to DANY_OS."
+  ];
+
+  const bootLog = document.getElementById('boot-log');
+  const bootScreen = document.getElementById('boot-screen');
   
-  // 1. Timecode Generator (Top Left)
-  const timecodeEl = document.getElementById('timecode');
-  let frames = 0, seconds = 34, minutes = 12, hours = 0;
-  
-  setInterval(() => {
-    frames += 24; // simulate 24fps
-    if (frames >= 60) { frames = 0; seconds++; }
-    if (seconds >= 60) { seconds = 0; minutes++; }
-    if (minutes >= 60) { minutes = 0; hours++; }
-    
-    const h = hours.toString().padStart(2, '0');
-    const m = minutes.toString().padStart(2, '0');
-    const s = seconds.toString().padStart(2, '0');
-    const f = frames.toString().padStart(2, '0');
-    
-    timecodeEl.textContent = `${h}:${m}:${s}:${f}`;
-  }, 1000/24);
-
-  // 2. Mouse Coordinate Tracker (Bottom Right)
-  const coordsEl = document.getElementById('coords');
-  document.addEventListener('mousemove', (e) => {
-    // Generate fake latitude/longitude based on mouse position
-    const lat = (e.clientY / window.innerHeight * 90).toFixed(4);
-    const lng = (e.clientX / window.innerWidth * 180).toFixed(4);
-    coordsEl.textContent = `LAT: ${lat} | LNG: ${lng}`;
-  });
-
-  // 3. Dynamic Viewfinder (Follows Mouse)
-  const viewfinder = document.getElementById('viewfinder');
-  let mouseX = window.innerWidth / 2;
-  let mouseY = window.innerHeight / 2;
-  let currentX = mouseX;
-  let currentY = mouseY;
-
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-
-  function animateViewfinder() {
-    // Smooth trailing effect
-    currentX += (mouseX - currentX) * 0.2;
-    currentY += (mouseY - currentY) * 0.2;
-    viewfinder.style.left = `${currentX}px`;
-    viewfinder.style.top = `${currentY}px`;
-    requestAnimationFrame(animateViewfinder);
+  let lineIndex = 0;
+  function printBootLine() {
+    if (lineIndex < bootLines.length) {
+      const p = document.createElement('div');
+      p.className = 'boot-line';
+      p.innerText = bootLines[lineIndex];
+      bootLog.appendChild(p);
+      lineIndex++;
+      setTimeout(printBootLine, Math.random() * 200 + 50);
+    } else {
+      setTimeout(() => {
+        bootScreen.classList.add('hidden');
+        // Open terminal automatically after boot
+        setTimeout(() => { openWindow('win-terminal'); runTerminal(); }, 800);
+      }, 500);
+    }
   }
-  animateViewfinder();
+  
+  // Start Boot
+  window.onload = () => { setTimeout(printBootLine, 500); };
 
-  // 4. Autofocus Lock-on System
-  const interactables = document.querySelectorAll('.interactable');
-  const hudStatus = document.getElementById('hud-status');
-  const hudIso = document.getElementById('hud-iso');
-  const hudAp = document.getElementById('hud-aperture');
+  /* =========================================
+     CLOCK
+  ========================================= */
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('tb-time').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
 
-  interactables.forEach(item => {
-    item.addEventListener('mouseenter', () => {
-      // Snap viewfinder to locked state
-      viewfinder.classList.add('locked');
-      
-      // Update HUD Telemetry based on data attributes
-      const type = item.getAttribute('data-type');
-      const iso = item.getAttribute('data-iso');
-      const ap = item.getAttribute('data-ap');
-      
-      hudStatus.textContent = `TARGET_LOCKED: [${type}]`;
-      hudStatus.style.color = 'var(--hud-alert)';
-      if(iso) hudIso.textContent = iso;
-      if(ap) hudAp.textContent = ap;
+  /* =========================================
+     WINDOW MANAGEMENT (DRAG & DROP)
+  ========================================= */
+  let highestZ = 100;
+
+  function openWindow(id) {
+    const win = document.getElementById(id);
+    win.classList.add('active');
+    bringToFront(win);
+  }
+
+  function closeWindow(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  function bringToFront(win) {
+    highestZ++;
+    win.style.zIndex = highestZ;
+  }
+
+  const windows = document.querySelectorAll('.window');
+  windows.forEach(win => {
+    win.addEventListener('mousedown', () => bringToFront(win));
+    
+    const header = win.querySelector('.win-header');
+    let isDragging = false, startX, startY, startLeft, startTop;
+
+    header.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startLeft = parseInt(window.getComputedStyle(win).left, 10);
+      startTop = parseInt(window.getComputedStyle(win).top, 10);
     });
 
-    item.addEventListener('mouseleave', () => {
-      // Release lock
-      viewfinder.classList.remove('locked');
-      
-      // Reset Telemetry
-      hudStatus.textContent = 'TGT_SEARCHING...';
-      hudStatus.style.color = 'var(--hud-cyan)';
-      hudIso.textContent = '3200';
-      hudAp.textContent = '2.8';
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      win.style.left = `${startLeft + dx}px`;
+      win.style.top = `${startTop + dy}px`;
     });
+
+    document.addEventListener('mouseup', () => { isDragging = false; });
   });
+
+  /* =========================================
+     TERMINAL TYPING EFFECT
+  ========================================= */
+  const termContent = document.getElementById('term-content');
+  const termLines = [
+    { type: 'cmd', text: 'whoami' },
+    { type: 'out', text: 'Dany Geo Johnson - SOC Analyst' },
+    { type: 'cmd', text: 'cat summary.txt' },
+    { type: 'out', text: 'SOC Analyst with hands-on experience in 24x7x365 SIEM monitoring and incident triage. Capable of mapping adversarial behavior to MITRE ATT&CK to reduce organizational risk.' },
+    { type: 'cmd', text: 'ls /skills/core/' },
+    { type: 'out', text: 'Splunk  Wazuh  Wireshark  Snort  MITRE_ATT&CK  OWASP' },
+    { type: 'cmd', text: './init_portfolio.sh' },
+    { type: 'out', text: 'Portfolio initialized. Double-click icons on desktop to explore.' },
+  ];
+
+  async function runTerminal() {
+    termContent.innerHTML = '';
+    for (const line of termLines) {
+      if (line.type === 'cmd') {
+        const lineEl = document.createElement('div');
+        lineEl.innerHTML = `<span class="term-prompt">dany@soc-core</span>:<span class="term-path">~</span>$ <span class="typing"></span>`;
+        termContent.appendChild(lineEl);
+        const typingEl = lineEl.querySelector('.typing');
+        
+        for (let i = 0; i < line.text.length; i++) {
+          typingEl.innerHTML += line.text[i];
+          await new Promise(r => setTimeout(r, 40));
+        }
+        await new Promise(r => setTimeout(r, 400));
+      } else {
+        const lineEl = document.createElement('div');
+        lineEl.style.marginBottom = '15px';
+        lineEl.innerText = line.text;
+        termContent.appendChild(lineEl);
+        await new Promise(r => setTimeout(r, 200));
+      }
+    }
+    const finalEl = document.createElement('div');
+    finalEl.innerHTML = `<span class="term-prompt">dany@soc-core</span>:<span class="term-path">~</span>$ <span style="animation: blink 1s infinite">_</span>`;
+    termContent.appendChild(finalEl);
+  }
 
 </script>
 </body>
