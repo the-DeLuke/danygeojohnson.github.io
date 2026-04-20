@@ -1,640 +1,459 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dany Geo Johnson — SOC Analyst</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dany Geo Johnson | Skill Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ═══════════════════════════════════════════
-   CSS VARIABLES & RESET (CYBERPUNK THEME)
-═══════════════════════════════════════════ */
-:root {
-  --bg: #07080f;
-  --bg2: #0d0f1e;
-  --indigo: #4f46e5;
-  --indigo-light: #6d63ff;
-  --pink: #f01e8f;
-  --cyan: #00e5ff;
-  --amber: #ffb703;
-  --text: #e8eaf6;
-  --text-muted: #7c85b8;
-  --card-bg: rgba(255,255,255,0.03);
-  --card-border: rgba(255,255,255,0.07);
-  --glass: rgba(13,15,30,0.7);
-  --radius: 16px;
-  --font-head: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-}
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  overflow-x: hidden;
-  cursor: none; /* Hides default cursor for our custom one */
-}
-body.loading { overflow: hidden; }
+  :root {
+    --bg: #05050a;
+    --panel-bg: rgba(10, 10, 15, 0.85);
+    --cyan: #00f0ff;
+    --pink: #ff2a75;
+    --amber: #ffb703;
+    --text: #e0e6ed;
+    --text-dim: #707a8a;
+    --font-head: 'Orbitron', sans-serif;
+    --font-body: 'Rajdhani', sans-serif;
+    --font-mono: 'Fira Code', monospace;
+  }
 
-/* ═══════════════════════════════════════════
-   SCROLLBAR & NOISE
-═══════════════════════════════════════════ */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: linear-gradient(var(--indigo), var(--pink)); border-radius: 3px; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+  }
 
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  background-size: 200px 200px;
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
-}
+  /* Grid Background */
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background: 
+      linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: -1;
+    perspective: 1000px;
+  }
 
-/* ═══════════════════════════════════════════
-   COMPLEX CUSTOM CURSOR
-═══════════════════════════════════════════ */
-#cursor-dot {
-  width: 8px; height: 8px;
-  background: var(--cyan);
-  border-radius: 50%;
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 99999;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 10px var(--cyan), 0 0 20px var(--cyan);
-  transition: width 0.2s, height 0.2s, background 0.2s;
-}
-#cursor-ring {
-  width: 40px; height: 40px;
-  border: 2px solid rgba(240,30,143,0.8);
-  border-radius: 50%;
-  position: fixed;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 99998;
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s ease-out, width 0.3s, height 0.3s, border-color 0.3s;
-  box-shadow: 0 0 15px rgba(240,30,143,0.3);
-}
-a:hover ~ #cursor-dot, button:hover ~ #cursor-dot, input:hover ~ #cursor-dot { width: 14px; height: 14px; background: var(--pink); box-shadow: 0 0 15px var(--pink); }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 4px; }
 
-/* ═══════════════════════════════════════════
-   LIVE PARTICLE CANVAS
-═══════════════════════════════════════════ */
-#particle-canvas {
-  position: fixed; inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
+  /* Layout */
+  .layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  @media (min-width: 1024px) {
+    .layout { flex-direction: row; }
+  }
 
-/* ═══════════════════════════════════════════
-   FLASHY LOADING SCREEN
-═══════════════════════════════════════════ */
-#loader {
-  position: fixed; inset: 0;
-  background: var(--bg);
-  z-index: 100000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 32px;
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-}
-#loader.hidden { opacity: 0; visibility: hidden; }
-.loader-initials {
-  font-family: var(--font-head);
-  font-size: clamp(5rem, 15vw, 10rem);
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--indigo-light), var(--pink), var(--cyan), var(--amber));
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradShift 2s ease infinite;
-  letter-spacing: -4px;
-}
-.loader-bar-wrap {
-  width: min(320px, 80vw); height: 3px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 99px; overflow: hidden;
-}
-.loader-bar {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--indigo), var(--pink), var(--cyan));
-  background-size: 200% 100%;
-  border-radius: 99px;
-  animation: loadFill 2s ease forwards, gradShift 1s linear infinite;
-}
-@keyframes loadFill { to { width: 100%; } }
-@keyframes gradShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+  /* Left Side: The Tree Area */
+  .tree-area {
+    flex: 1;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
 
-/* ═══════════════════════════════════════════
-   LAYOUT & NAVBAR
-═══════════════════════════════════════════ */
-main { position: relative; z-index: 1; }
-section { padding: clamp(60px, 10vw, 120px) clamp(20px, 6vw, 100px); max-width: 1300px; margin: 0 auto; }
-.section-label { font-family: var(--font-body); font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--cyan); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
-.section-label::before { content: ''; width: 30px; height: 1px; background: var(--cyan); }
-.section-title { font-family: var(--font-head); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; line-height: 1.1; margin-bottom: 60px; }
+  .header { text-align: center; margin-bottom: 50px; }
+  .header h1 { font-family: var(--font-head); font-size: 2.5rem; color: #fff; text-shadow: 0 0 10px var(--cyan); letter-spacing: 2px; }
+  .header p { font-family: var(--font-mono); color: var(--cyan); margin-top: 10px; font-size: 0.9rem; }
 
-#navbar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-  padding: 0 clamp(20px, 5vw, 80px); height: 70px;
-  display: flex; align-items: center; justify-content: space-between;
-  background: var(--glass); backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid var(--card-border);
-  transform: translateY(-100%);
-  animation: navSlideDown 0.8s 2.5s cubic-bezier(0.22,1,0.36,1) forwards;
-}
-@keyframes navSlideDown { to { transform: translateY(0); } }
-.nav-logo { font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; color: var(--text); text-decoration: none; }
-.nav-logo span { color: var(--cyan); }
-.nav-links { display: flex; gap: 36px; list-style: none; }
-.nav-links a { font-family: var(--font-body); font-size: 0.85rem; color: var(--text-muted); text-decoration: none; position: relative; padding-bottom: 4px; transition: 0.3s; }
-.nav-links a::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 1.5px; background: linear-gradient(90deg, var(--cyan), var(--pink)); transition: width 0.3s; }
-.nav-links a:hover { color: var(--text); }
-.nav-links a:hover::after { width: 100%; }
+  /* CSS Hierarchical Tree */
+  .tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 50px;
+  }
+  .level {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    position: relative;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+  
+  /* The Nodes */
+  .node {
+    position: relative;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid var(--text-dim);
+    padding: 15px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font-head);
+    font-size: 0.9rem;
+    color: var(--text);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 2;
+  }
+  .node::before {
+    content: ''; position: absolute; inset: -4px;
+    border: 1px dashed transparent; border-radius: 10px;
+    transition: 0.3s;
+  }
 
-/* ═══════════════════════════════════════════
-   HERO & 3D CARD
-═══════════════════════════════════════════ */
-#hero { min-height: 100vh; display: flex; align-items: center; padding-top: 70px; max-width: 1300px; margin: 0 auto; padding-left: clamp(20px, 6vw, 100px); padding-right: clamp(20px, 6vw, 100px); }
-.hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; width: 100%; }
-.hero-left { display: flex; flex-direction: column; gap: 28px; }
-.availability-tag { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.2); border-radius: 99px; padding: 6px 16px; font-size: 0.75rem; color: var(--cyan); width: fit-content; animation: fadeUp 0.8s 2.8s both; }
-.availability-tag .dot { width: 7px; height: 7px; background: var(--cyan); border-radius: 50%; animation: pulse-dot 2s infinite; }
-@keyframes pulse-dot { 0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); } 50% { box-shadow: 0 0 0 5px rgba(0,229,255,0); } }
+  /* Connecting Lines */
+  .level::before {
+    content: '';
+    position: absolute;
+    top: -40px; left: 50%;
+    width: 2px; height: 40px;
+    background: var(--text-dim);
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+  .node.has-children::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 50%;
+    width: 2px; height: 40px;
+    background: var(--text-dim);
+    transform: translateX(-50%);
+    z-index: 1;
+  }
 
-.hero-name {
-  font-family: var(--font-head); font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 800; line-height: 1; letter-spacing: -2px;
-  background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 30%, var(--pink) 60%, var(--amber) 100%);
-  background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  animation: fadeUp 0.8s 3s both, gradShift 4s ease infinite;
-}
-.hero-subtitle { font-family: var(--font-body); font-size: clamp(1rem, 2vw, 1.25rem); color: var(--text-muted); font-weight: 300; animation: fadeUp 0.8s 3.1s both; }
-.hero-subtitle strong { color: var(--indigo-light); font-weight: 600; }
-.hero-ctas { display: flex; gap: 16px; flex-wrap: wrap; animation: fadeUp 0.8s 3.2s both; }
-.btn-primary { padding: 12px 28px; background: linear-gradient(135deg, var(--indigo), var(--pink)); color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: none; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(79,70,229,0.3); }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(240,30,143,0.4); }
-.btn-secondary { padding: 12px 28px; background: transparent; color: var(--text); border: 1px solid var(--card-border); border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: none; text-decoration: none; transition: 0.2s; }
-.btn-secondary:hover { border-color: var(--cyan); background: rgba(0,229,255,0.05); }
+  /* Node Hover & Active States */
+  .node:hover { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.3); transform: translateY(-3px); }
+  .node:hover::before { border-color: var(--cyan); animation: spin 4s linear infinite; }
+  
+  .node.active { border-color: var(--pink); color: var(--pink); background: rgba(255, 42, 117, 0.1); box-shadow: 0 0 30px rgba(255, 42, 117, 0.4); transform: scale(1.05); }
+  .node.active::before { border-color: var(--pink); border-style: solid; }
 
-/* The 3D Floating Card */
-.hero-right { display: flex; justify-content: center; align-items: center; animation: fadeUp 0.8s 3.3s both; perspective: 1000px; }
-.hero-card-wrap { position: relative; width: 320px; height: 380px; transform-style: preserve-3d; animation: float3d 6s ease-in-out infinite; }
-.hero-card-wrap::before { content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) translateZ(-50px); width: 260px; height: 260px; background: radial-gradient(circle, rgba(79,70,229,0.5) 0%, transparent 70%); border-radius: 50%; filter: blur(30px); }
-.spinning-ring { position: absolute; top: 50%; left: 50%; width: 300px; height: 300px; border: 2px dashed rgba(0,229,255,0.4); border-radius: 50%; transform: translate(-50%, -50%) translateZ(-20px); animation: spin 20s linear infinite; }
-.spinning-ring-2 { position: absolute; top: 50%; left: 50%; width: 260px; height: 260px; border: 1px dashed rgba(240,30,143,0.3); border-radius: 50%; transform: translate(-50%, -50%) translateZ(10px); animation: spin 12s linear infinite reverse; }
-@keyframes spin { to { transform: translate(-50%, -50%) translateZ(0) rotate(360deg); } }
-@keyframes float3d { 0%, 100% { transform: translateY(0) rotateX(2deg) rotateY(-2deg); } 50% { transform: translateY(-15px) rotateX(-2deg) rotateY(2deg); } }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
 
-.hero-card {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 220px; background: linear-gradient(135deg, rgba(79,70,229,0.15), rgba(240,30,143,0.1));
-  border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px 24px; text-align: center;
-  backdrop-filter: blur(10px); box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-.card-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, var(--indigo), var(--pink)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; margin: 0 auto 16px; box-shadow: 0 0 30px rgba(79,70,229,0.5); }
-.card-name { font-family: var(--font-head); font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-.card-role { font-size: 0.72rem; color: var(--cyan); letter-spacing: 0.1em; margin-bottom: 20px; }
-.card-stats { display: flex; justify-content: space-around; border-top: 1px solid var(--card-border); padding-top: 16px; }
-.stat-num { font-family: var(--font-head); font-size: 1.2rem; font-weight: 800; color: var(--amber); }
-.stat-label { font-size: 0.6rem; color: var(--text-muted); letter-spacing: 0.05em; }
+  /* Node Categories */
+  .node[data-type="root"] { font-size: 1.2rem; padding: 20px 40px; border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+  .node[data-type="project"] { border-color: var(--amber); }
 
-/* ═══════════════════════════════════════════
-   INFINITE MARQUEE
-═══════════════════════════════════════════ */
-.marquee-section { padding: 30px 0; overflow: hidden; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); background: rgba(255,255,255,0.01); position: relative; z-index: 1; }
-.marquee-track { display: flex; gap: 60px; width: max-content; animation: marqueeScroll 20s linear infinite; }
-.marquee-item { font-family: var(--font-head); font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 20px; }
-.marquee-item::after { content: '✦'; color: var(--pink); }
-@keyframes marqueeScroll { to { transform: translateX(-50%); } }
+  /* Right Side: The Stats/Inspector Panel */
+  .inspector {
+    width: 100%;
+    background: var(--panel-bg);
+    border-left: 1px solid rgba(0, 240, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+  }
+  @media (min-width: 1024px) {
+    .inspector { width: 400px; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  }
 
-/* ═══════════════════════════════════════════
-   SKILLS & ANIMATED BARS
-═══════════════════════════════════════════ */
-.skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
-.skill-item { margin-bottom: 28px; }
-.skill-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-.skill-name { font-family: var(--font-body); font-size: 0.9rem; font-weight: 500; }
-.skill-pct { font-family: var(--font-head); font-size: 0.8rem; color: var(--cyan); font-weight: 700; }
-.skill-bar-bg { height: 6px; background: rgba(255,255,255,0.06); border-radius: 99px; overflow: hidden; }
-.skill-bar { height: 100%; width: 0%; border-radius: 99px; transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1); position: relative; overflow: hidden; }
-.skill-bar.filled::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: shimmerBar 1.5s 1.3s ease forwards; }
-@keyframes shimmerBar { to { left: 200%; } }
+  .inspector-header { border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px; margin-bottom: 20px; }
+  .inspector-title { font-family: var(--font-head); font-size: 1.8rem; color: var(--cyan); margin-bottom: 5px; }
+  .inspector-type { font-family: var(--font-mono); color: var(--pink); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; }
 
-.chip-cloud { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 50px; }
-.tech-chip { padding: 6px 14px; border: 1px solid var(--card-border); border-radius: 99px; font-size: 0.75rem; color: var(--text-muted); background: var(--card-bg); transition: 0.3s; cursor: none; }
-.tech-chip:hover { transform: translateY(-4px); color: var(--cyan); border-color: var(--cyan); box-shadow: 0 4px 20px rgba(0,229,255,0.2); }
+  .inspector-content { font-size: 1.1rem; line-height: 1.6; color: var(--text); flex-grow: 1; }
+  .stat-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 5px; }
+  .stat-label { font-family: var(--font-mono); color: var(--text-dim); font-size: 0.8rem; }
+  .stat-val { font-weight: 700; color: var(--amber); }
+  
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  .tech-tag { padding: 4px 10px; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--cyan); border-radius: 4px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--cyan); }
 
-/* ═══════════════════════════════════════════
-   EXPERIENCE TIMELINE
-═══════════════════════════════════════════ */
-.timeline { position: relative; padding-left: 30px; }
-.timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--indigo), var(--pink), var(--cyan)); border-radius: 2px; }
-.timeline-item { position: relative; margin-bottom: 50px; opacity: 0; transform: translateX(-30px); transition: opacity 0.7s, transform 0.7s; }
-.timeline-item.visible { opacity: 1; transform: translateX(0); }
-.timeline-dot { position: absolute; left: -38px; top: 6px; width: 16px; height: 16px; border-radius: 50%; background: linear-gradient(135deg, var(--indigo), var(--cyan)); border: 2px solid var(--bg); box-shadow: 0 0 10px rgba(79,70,229,0.6); }
-.exp-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px; transition: 0.3s; }
-.exp-card:hover { transform: translateX(8px); border-color: rgba(79,70,229,0.4); box-shadow: 0 8px 40px rgba(79,70,229,0.15), -4px 0 20px rgba(240,30,143,0.1); }
-.exp-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
-.exp-title { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; }
-.exp-badge { padding: 4px 12px; background: rgba(79,70,229,0.15); border: 1px solid rgba(79,70,229,0.3); border-radius: 99px; font-size: 0.65rem; color: var(--indigo-light); font-weight: 600; }
-.exp-company { color: var(--cyan); font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
-.exp-date { color: var(--text-muted); font-size: 0.78rem; margin-bottom: 16px; }
-.exp-desc { color: var(--text-muted); font-size: 0.88rem; line-height: 1.7; margin-left: 16px; }
-.exp-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.exp-chip { padding: 3px 10px; background: rgba(0,229,255,0.07); border: 1px solid rgba(0,229,255,0.15); border-radius: 6px; font-size: 0.68rem; color: var(--cyan); }
+  .default-message {
+    text-align: center; color: var(--text-dim); font-family: var(--font-mono); margin-top: 50%; transform: translateY(-50%); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-/* ═══════════════════════════════════════════
-   PROJECTS
-═══════════════════════════════════════════ */
-.projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-.project-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px; position: relative; overflow: hidden; transition: 0.3s; opacity: 0; transform: translateY(30px); }
-.project-card.visible { opacity: 1; transform: translateY(0); transition: opacity 0.7s, transform 0.7s; }
-.project-card::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 3px; background: linear-gradient(90deg, var(--indigo), var(--pink), var(--cyan)); transition: left 0.4s ease; }
-.project-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.4); border-color: rgba(255,255,255,0.15); }
-.project-card:hover::before { left: 0; }
-.project-emoji { font-size: 2rem; margin-bottom: 16px; }
-.project-name { font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; margin-bottom: 10px; }
-.project-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 20px; }
-.project-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.project-tag { padding: 3px 10px; background: rgba(255,183,3,0.08); border: 1px solid rgba(255,183,3,0.2); border-radius: 6px; font-size: 0.65rem; color: var(--amber); }
+  /* Contact Section */
+  .contact-section {
+    width: 100%;
+    background: #0a0a0f;
+    border-top: 2px solid var(--text-dim);
+    padding: 60px 20px;
+  }
+  .contact-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  @media (min-width: 768px) {
+    .contact-container { grid-template-columns: 1fr 1fr; }
+  }
 
-/* ═══════════════════════════════════════════
-   CONTACT & GLOWING FORM
-═══════════════════════════════════════════ */
-.contact-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  /* Explicit Contact Info Matching User Image */
+  .contact-info-block { display: flex; flex-direction: column; gap: 25px; }
+  .info-item { display: flex; flex-direction: column; gap: 5px; }
+  .info-label { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+  .info-value { font-family: var(--font-body); font-size: 1.3rem; font-weight: 600; color: #fff; text-decoration: none; transition: color 0.3s; }
+  .info-value:hover { color: var(--cyan); }
 
-/* The Form */
-.cyber-form-wrap {
-  background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius);
-  padding: 30px; position: relative; overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-  opacity: 0; transform: translateX(-30px); transition: 0.8s;
-}
-.cyber-form-wrap.visible { opacity: 1; transform: translateX(0); }
-.cyber-form-wrap::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, var(--cyan)); animation: rotateBorder 4s linear infinite; z-index: 0; opacity: 0.1; }
-@keyframes rotateBorder { 100% { transform: rotate(360deg); } }
+  /* Transmission Form */
+  .cyber-form {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 8px;
+  }
+  .form-group { margin-bottom: 20px; }
+  .form-control { width: 100%; background: #000; border: 1px solid var(--text-dim); padding: 12px; color: #fff; font-family: var(--font-body); border-radius: 4px; transition: 0.3s; }
+  .form-control:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,240,255,0.2); }
+  textarea.form-control { min-height: 100px; resize: vertical; }
+  .btn-submit {
+    width: 100%; padding: 15px; background: var(--cyan); color: #000; font-family: var(--font-head); font-weight: 900; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s; text-transform: uppercase;
+  }
+  .btn-submit:hover { background: #fff; box-shadow: 0 0 20px var(--cyan); }
 
-.cyber-form { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 20px; }
-.form-input { 
-  width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); 
-  padding: 14px 16px; border-radius: 8px; color: var(--text); font-family: var(--font-body);
-  transition: 0.3s; cursor: none;
-}
-.form-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,229,255,0.2); background: rgba(0,229,255,0.02); }
-textarea.form-input { resize: vertical; min-height: 120px; }
-.btn-submit {
-  width: 100%; padding: 14px; background: linear-gradient(90deg, var(--indigo), var(--cyan)); 
-  border: none; border-radius: 8px; color: #fff; font-family: var(--font-head); font-weight: 700; font-size: 1rem;
-  cursor: none; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
-}
-.btn-submit:hover { box-shadow: 0 0 30px rgba(0,229,255,0.4); transform: translateY(-2px); }
-
-/* The Ripple Avatar */
-.contact-right { display: flex; justify-content: center; align-items: center; opacity: 0; transform: translateX(30px); transition: 0.8s; }
-.contact-right.visible { opacity: 1; transform: translateX(0); }
-.contact-avatar { position: relative; width: 160px; height: 160px; }
-.ripple-ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 50%; border: 1.5px solid; animation: rippleOut 3s ease-out infinite; }
-.ripple-ring:nth-child(1) { width: 160px; height: 160px; border-color: rgba(79,70,229,0.6); animation-delay: 0s; }
-.ripple-ring:nth-child(2) { width: 160px; height: 160px; border-color: rgba(240,30,143,0.4); animation-delay: 1s; }
-.ripple-ring:nth-child(3) { width: 160px; height: 160px; border-color: rgba(0,229,255,0.3); animation-delay: 2s; }
-@keyframes rippleOut { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; } }
-.contact-initials { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; background: linear-gradient(135deg, var(--indigo), var(--pink)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 1.8rem; font-weight: 800; box-shadow: 0 0 50px rgba(79,70,229,0.5); z-index: 1; }
-
-/* ═══════════════════════════════════════════
-   REVEALS & RESPONSIVE
-═══════════════════════════════════════════ */
-.reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-left { opacity: 0; transform: translateX(-40px); transition: 0.8s; }
-.reveal-left.visible { opacity: 1; transform: translateX(0); }
-.reveal-right { opacity: 0; transform: translateX(40px); transition: 0.8s; }
-.reveal-right.visible { opacity: 1; transform: translateX(0); }
-@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-@media (max-width: 900px) {
-  .hero-inner { grid-template-columns: 1fr; text-align: center; }
-  .hero-right { display: none; }
-  .availability-tag { margin: 0 auto; }
-  .hero-ctas { justify-content: center; }
-  .skills-grid, .contact-inner { grid-template-columns: 1fr; }
-  .contact-right { display: none; }
-  .nav-links { display: none; }
-}
 </style>
 </head>
-<body class="loading">
+<body>
 
-<div id="cursor-dot"></div>
-<div id="cursor-ring"></div>
-
-<div id="loader">
-  <div class="loader-initials">DGJ</div>
-  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
-</div>
-
-<canvas id="particle-canvas"></canvas>
-
-<nav id="navbar">
-  <a class="nav-logo" href="#hero">Dany<span>.</span></a>
-  <ul class="nav-links">
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#experience">Experience</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-</nav>
-
-<main>
-  <section id="hero">
-    <div class="hero-inner">
-      <div class="hero-left">
-        <div class="availability-tag"><span class="dot"></span> Open to Opportunities</div>
-        <h1 class="hero-name">Dany Geo<br>Johnson</h1>
-        <p class="hero-subtitle">
-          <strong>SOC Analyst</strong> — Cyber Defense &amp; Incident Response<br>
-          Kerala, India · SIEM · Splunk · Wazuh · MITRE ATT&amp;CK
-        </p>
-        <div class="hero-ctas">
-          <a href="#projects" class="btn-primary">View Projects</a>
-          <a href="#contact" class="btn-secondary">Contact Me →</a>
-        </div>
-      </div>
-      <div class="hero-right">
-        <div class="hero-card-wrap">
-          <div class="spinning-ring"></div>
-          <div class="spinning-ring-2"></div>
-          <div class="hero-card">
-            <div class="card-avatar">DGJ</div>
-            <div class="card-name">Dany Geo Johnson</div>
-            <div class="card-role">SOC ANALYST · CEH</div>
-            <div class="card-stats">
-              <div class="stat"><div class="stat-num">4+</div><div class="stat-label">Tools</div></div>
-              <div class="stat"><div class="stat-num">3</div><div class="stat-label">Projects</div></div>
-              <div class="stat"><div class="stat-num">4</div><div class="stat-label">Certs</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="layout">
+  
+  <div class="tree-area">
+    <div class="header">
+      <h1>CHARACTER BUILD</h1>
+      <p>> SELECT A NODE TO INSPECT STATS <</p>
     </div>
-  </section>
 
-  <div class="marquee-section">
-    <div class="marquee-track">
-      <div class="marquee-item">CODTECH IT SOLUTIONS</div>
-      <div class="marquee-item">AMRITA SCHOOL OF ENGINEERING</div>
-      <div class="marquee-item">SPLUNK</div>
-      <div class="marquee-item">WAZUH SIEM</div>
-      <div class="marquee-item">MITRE ATT&amp;CK</div>
-      <div class="marquee-item">CEH CERTIFIED</div>
-      <div class="marquee-item">SOC OPERATIONS</div>
-      <div class="marquee-item">CODTECH IT SOLUTIONS</div>
-      <div class="marquee-item">AMRITA SCHOOL OF ENGINEERING</div>
-      <div class="marquee-item">SPLUNK</div>
-      <div class="marquee-item">WAZUH SIEM</div>
-      <div class="marquee-item">MITRE ATT&amp;CK</div>
-      <div class="marquee-item">CEH CERTIFIED</div>
-      <div class="marquee-item">SOC OPERATIONS</div>
+    <div class="tree">
+      <div class="level" style="margin-top: 0;">
+        <div class="node has-children active" data-id="root" data-type="root">DANY GEO JOHNSON</div>
+      </div>
+
+      <div class="level">
+        <div class="node has-children" data-id="soc">SOC OPERATIONS</div>
+        <div class="node has-children" data-id="threat">THREAT ANALYSIS</div>
+        <div class="node has-children" data-id="edu">BASE STATS (EDU)</div>
+      </div>
+
+      <div class="level">
+        <div class="node has-children" data-id="siem">SIEM Monitoring</div>
+        <div class="node has-children" data-id="incident">Incident Response</div>
+        
+        <div class="node has-children" data-id="net_sec">Network Security</div>
+        
+        <div class="node" data-id="btech">B.Tech CS</div>
+        <div class="node" data-id="ceh">CEH Certified</div>
+      </div>
+
+      <div class="level">
+        <div class="node" data-id="proj_wazuh" data-type="project">Wazuh Implementation [PROJ]</div>
+        <div class="node" data-id="proj_snort" data-type="project">Snort IDS Deployment [PROJ]</div>
+        <div class="node" data-id="proj_fim" data-type="project">FIM Development [PROJ]</div>
+      </div>
     </div>
   </div>
 
-  <section id="skills">
-    <div class="reveal">
-      <div class="section-label">What I work with</div>
-      <h2 class="section-title">Technical Skills</h2>
+  <div class="inspector">
+    <div id="inspector-default" class="default-message">
+      [ WAITING FOR NODE SELECTION ]
     </div>
-    <div class="skills-grid">
-      <div class="reveal-left">
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">SOC Operations (L1/L2)</span><span class="skill-pct">92%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--indigo),var(--indigo-light))" data-width="92"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">SIEM Monitoring (Splunk / Wazuh)</span><span class="skill-pct">88%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--pink),#ff6b9d)" data-width="88"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Incident Response & Triage</span><span class="skill-pct">85%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--cyan),#00b8d4)" data-width="85"></div></div>
-        </div>
+    
+    <div id="inspector-data" style="display: none;">
+      <div class="inspector-header">
+        <div class="inspector-type" id="panel-type">CLASS_PROFILE</div>
+        <div class="inspector-title" id="panel-title">Dany Geo Johnson</div>
       </div>
-      <div class="reveal-right">
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Network Traffic / PCAP Analysis</span><span class="skill-pct">82%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--cyan),var(--indigo-light))" data-width="82"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">Phishing & Malware Analysis</span><span class="skill-pct">78%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--pink),var(--amber))" data-width="78"></div></div>
-        </div>
-        <div class="skill-item">
-          <div class="skill-header"><span class="skill-name">OWASP / Web Security (VAPT)</span><span class="skill-pct">75%</span></div>
-          <div class="skill-bar-bg"><div class="skill-bar" style="background:linear-gradient(90deg,var(--amber),#ff8c00)" data-width="75"></div></div>
-        </div>
+      <div class="inspector-content">
+        <div id="panel-stats"></div>
+        <p id="panel-desc" style="margin-top: 20px;"></p>
+        <div id="panel-tags" class="tech-stack"></div>
       </div>
     </div>
-    <div class="chip-cloud reveal">
-      <div class="tech-chip">Splunk</div><div class="tech-chip">Wazuh</div><div class="tech-chip">Wireshark</div>
-      <div class="tech-chip">Metasploit</div><div class="tech-chip">Snort IDS</div><div class="tech-chip">MITRE ATT&amp;CK</div>
-      <div class="tech-chip">Firewalls</div><div class="tech-chip">TCP/IP</div><div class="tech-chip">PCAP Analysis</div>
-    </div>
-  </section>
+  </div>
 
-  <section id="experience">
-    <div class="reveal">
-      <div class="section-label">Career Journey</div>
-      <h2 class="section-title">Work Experience</h2>
+</div>
+
+<div class="contact-section" id="contact">
+  <div class="contact-container">
+    
+    <div class="contact-info-block">
+      <div class="info-item">
+        <span class="info-label">EMAIL_ADDRESS</span>
+        <a href="mailto:danygeo13@gmail.com" class="info-value">danygeo13@gmail.com</a>
+      </div>
+      <div class="info-item">
+        <span class="info-label">PHONE_COMM</span>
+        <a href="tel:+919526905931" class="info-value">+91 9526905931</a>
+      </div>
+      <div class="info-item">
+        <span class="info-label">LINKEDIN_PROFILE</span>
+        <a href="https://linkedin.com/in/dany-geo-johnson" target="_blank" class="info-value">linkedin.com/in/dany-geo-johnson</a>
+      </div>
+      <div class="info-item">
+        <span class="info-label">PHYSICAL_LOCATION</span>
+        <span class="info-value">Kollam, Kerala</span>
+      </div>
     </div>
-    <div class="timeline">
-      <div class="timeline-item">
-        <div class="timeline-dot"></div>
-        <div class="exp-card">
-          <div class="exp-header">
-            <div>
-              <div class="exp-title">Cybersecurity Analyst Intern</div>
-              <div class="exp-company">CODTECH IT SOLUTIONS</div>
-              <div class="exp-date">Aug 2025 – Dec 2025 · Kollam, Kerala</div>
-            </div>
-            <div class="exp-badge">SOC L1</div>
-          </div>
-          <ul class="exp-desc">
-            <li>Performed SOC L1 operations including security event monitoring, alert analysis, and incident triage using SIEM tools across a 24×7×365 environment.</li>
-            <li>Investigated and responded to low and medium severity incidents in accordance with documented playbooks and defined SLA requirements.</li>
-            <li>Utilized SIEM platforms (Splunk, Wazuh) for log analysis, event correlation, and case management across multiple log sources.</li>
-          </ul>
-          <div class="exp-chips">
-            <div class="exp-chip">Splunk</div><div class="exp-chip">Wazuh</div><div class="exp-chip">SIEM Monitoring</div><div class="exp-chip">Incident Triage</div>
-          </div>
+
+    <div class="cyber-form">
+      <form action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
+        <div class="form-group">
+          <input type="text" name="name" class="form-control" placeholder="YOUR NAME" required>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="projects">
-    <div class="reveal">
-      <div class="section-label">What I've built</div>
-      <h2 class="section-title">Projects</h2>
-    </div>
-    <div class="projects-grid">
-      <div class="project-card">
-        <div class="project-emoji">🛡️</div>
-        <div class="project-name">Wazuh Security Monitoring</div>
-        <div class="project-desc">Implemented a Wazuh-based SIEM monitoring system for enterprise and cloud-based environments. Supported risk assessment and security architecture evaluation.</div>
-        <div class="project-tags"><div class="project-tag">Wazuh</div><div class="project-tag">Cloud Security</div></div>
-      </div>
-      <div class="project-card">
-        <div class="project-emoji">🔍</div>
-        <div class="project-name">Network Intrusion Detection</div>
-        <div class="project-desc">Deployed and configured Snort IDS to detect malicious activity across layered systems. Mapped attack patterns to MITRE ATT&CK framework.</div>
-        <div class="project-tags"><div class="project-tag">Snort IDS</div><div class="project-tag">MITRE ATT&CK</div></div>
-      </div>
-      <div class="project-card">
-        <div class="project-emoji">📂</div>
-        <div class="project-name">File Integrity Monitoring Tool</div>
-        <div class="project-desc">Developed a File Integrity Monitoring solution supporting secure configuration validation. Generated alerts and validated remediation.</div>
-        <div class="project-tags"><div class="project-tag">FIM</div><div class="project-tag">Alert Generation</div></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="contact">
-    <div class="reveal">
-      <div class="section-label">Secure Transmission</div>
-      <h2 class="section-title">Initiate Contact</h2>
-    </div>
-    <div class="contact-inner">
-      <div class="cyber-form-wrap reveal-left">
-        <form class="cyber-form" action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
-          <input type="text" name="name" class="form-input" placeholder="Your Name" required>
-          <input type="email" name="email" class="form-input" placeholder="Your Email Address" required>
-          <textarea name="message" class="form-input" placeholder="Enter your message..." required></textarea>
-          <button type="submit" class="btn-submit">Submit Transmission</button>
-        </form>
-      </div>
-      
-      <div class="contact-right reveal-right">
-        <div class="contact-avatar">
-          <div class="ripple-ring"></div>
-          <div class="ripple-ring"></div>
-          <div class="ripple-ring"></div>
-          <div class="contact-initials">DGJ</div>
+        <div class="form-group">
+          <input type="email" name="email" class="form-control" placeholder="YOUR EMAIL" required>
         </div>
-      </div>
+        <div class="form-group">
+          <textarea name="message" class="form-control" placeholder="MESSAGE PAYLOAD..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">SUBMIT TRANSMISSION</button>
+      </form>
     </div>
-  </section>
-</main>
 
-<footer style="text-align: center; padding: 40px 20px; border-top: 1px solid var(--card-border); color: var(--text-muted); font-size: 0.8rem; position: relative; z-index: 1;">
-  <p>Designed &amp; Built with ❤️ — Dany Geo Johnson © 2025 · SOC Analyst · CEH</p>
-</footer>
+  </div>
+</div>
 
 <script>
-/* ═══════════════════════════════════════════
-   LOADER & CURSOR
-═══════════════════════════════════════════ */
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('hidden');
-    document.body.classList.remove('loading');
-  }, 2400);
-});
-
-const dot = document.getElementById('cursor-dot');
-const ring = document.getElementById('cursor-ring');
-let ringX = 0, ringY = 0, mouseX = 0, mouseY = 0;
-
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX; mouseY = e.clientY;
-  dot.style.left = mouseX + 'px';
-  dot.style.top = mouseY + 'px';
-});
-
-(function animRing() {
-  ringX += (mouseX - ringX) * 0.15;
-  ringY += (mouseY - ringY) * 0.15;
-  ring.style.left = ringX + 'px';
-  ring.style.top = ringY + 'px';
-  requestAnimationFrame(animRing);
-})();
-
-/* ═══════════════════════════════════════════
-   PARTICLE CANVAS
-═══════════════════════════════════════════ */
-const canvas = document.getElementById('particle-canvas');
-const ctx = canvas.getContext('2d');
-const accents = ['#4f46e5','#f01e8f','#00e5ff','#ffb703','#6d63ff'];
-let particles = [], W, H;
-
-function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-resize(); window.addEventListener('resize', resize);
-
-for (let i = 0; i < 80; i++) {
-  particles.push({
-    x: Math.random() * W, y: Math.random() * H,
-    vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
-    r: Math.random() * 2 + 1,
-    color: accents[Math.floor(Math.random() * accents.length)],
-    alpha: Math.random() * 0.5 + 0.2
-  });
-}
-
-function drawParticles() {
-  ctx.clearRect(0, 0, W, H);
-  particles.forEach((p, i) => {
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < 0 || p.x > W) p.vx *= -1;
-    if (p.y < 0 || p.y > H) p.vy *= -1;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = p.color; ctx.globalAlpha = p.alpha; ctx.fill();
-    for (let j = i + 1; j < particles.length; j++) {
-      const q = particles[j]; const d = Math.hypot(p.x - q.x, p.y - q.y);
-      if (d < 120) {
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y);
-        ctx.strokeStyle = p.color; ctx.globalAlpha = (1 - d / 120) * 0.2;
-        ctx.lineWidth = 0.6; ctx.stroke();
-      }
+  // Database for all nodes
+  const nodeData = {
+    "root": {
+      type: "PLAYER PROFILE",
+      title: "Dany Geo Johnson",
+      stats: { "Class": "Cybersecurity Analyst", "Guild": "CODTECH IT SOLUTIONS", "Level": "Intern (Aug-Dec 2025)" },
+      desc: "SOC Analyst with hands-on experience in SOC Operations, SIEM monitoring, and cyber security incident management within a 24x7x365 environment. Proven ability to triage low-to-medium severity incidents.",
+      tags: ["SOC Operations", "Incident Management", "SLA Compliance"]
+    },
+    "soc": {
+      type: "SKILL TREE",
+      title: "SOC Operations",
+      stats: { "Proficiency": "Advanced", "Role Focus": "L1/L2 Analysis" },
+      desc: "Following defined SOC processes and SOPs. Ensuring accurate incident documentation and maintaining SIEM/CDC work logs to support audit trails and quality reviews.",
+      tags: ["Splunk", "Wazuh", "Event Correlation", "Case Management"]
+    },
+    "threat": {
+      type: "SKILL TREE",
+      title: "Threat Analysis",
+      stats: { "Proficiency": "Intermediate", "Focus": "VAPT & Malware" },
+      desc: "Identification of IOCs, phishing analysis, and malware analysis. Familiar with OWASP Top 10 and basic vulnerability validation.",
+      tags: ["IOC Identification", "Malware Analysis", "OWASP Top 10"]
+    },
+    "edu": {
+      type: "BASE STATS",
+      title: "Education & Foundation",
+      stats: { "Institution": "Amrita School of Engineering", "Years": "2020 - 2024" },
+      desc: "Academic foundation providing deep understanding of computer science principles, networking, and software systems.",
+      tags: ["B.Tech Computer Science", "G.B.H.S.S Chavara"]
+    },
+    "siem": {
+      type: "CORE SKILL",
+      title: "SIEM Monitoring",
+      stats: { "Primary Tools": "Splunk, Wazuh", "Log Sources": "Multiple" },
+      desc: "Utilized SIEM platforms for extensive log analysis, event correlation, and alerting within enterprise environments.",
+      tags: ["Log Analysis", "Alert Triage"]
+    },
+    "incident": {
+      type: "CORE SKILL",
+      title: "Incident Response",
+      stats: { "Methodology": "Playbook-Based", "Severity Handling": "Low & Medium" },
+      desc: "Investigated and responded to incidents in accordance with documented playbooks and defined SLA requirements. Escalating complex issues to L2/L3 teams.",
+      tags: ["Triage", "Escalation", "Playbooks"]
+    },
+    "net_sec": {
+      type: "CORE SKILL",
+      title: "Network Security",
+      stats: { "Traffic Analysis": "Wireshark, PCAP", "Architecture": "TCP/IP, Firewalls" },
+      desc: "Deep analysis of network traffic and endpoint protection mechanisms. Deployment of IDS/IPS solutions across layered n-tier systems.",
+      tags: ["Wireshark", "DNS", "VPNs", "PCAP"]
+    },
+    "btech": {
+      type: "ACHIEVEMENT",
+      title: "Bachelor of Technology",
+      stats: { "Major": "Computer Science", "Graduation": "2024" },
+      desc: "Completed comprehensive computer science curriculum at Amrita School of Engineering.",
+      tags: []
+    },
+    "ceh": {
+      type: "CERTIFICATION",
+      title: "CEH & Cyber Defense",
+      stats: { "Cert 1": "Certified Ethical Hacker", "Cert 2": "Adv. Diploma in Cyber Defense" },
+      desc: "Earned professional certifications demonstrating practical capabilities in ethical hacking, cyber defense, and anonymity/cryptocurrency concepts.",
+      tags: ["CEH", "Dark Web", "Tata Cyber Simulation"]
+    },
+    "proj_wazuh": {
+      type: "ULTIMATE PROJECT",
+      title: "Wazuh Security Monitoring",
+      stats: { "Environment": "Enterprise & Cloud", "Alignment": "C&A Standards" },
+      desc: "Implemented Wazuh-based monitoring for enterprise and cloud-based environments. Supported risk assessment and security architecture evaluation.",
+      tags: ["Wazuh", "Cloud Security", "Risk Assessment"]
+    },
+    "proj_snort": {
+      type: "ULTIMATE PROJECT",
+      title: "Snort IDS Deployment",
+      stats: { "Framework": "MITRE ATT&CK", "Target": "n-tier systems" },
+      desc: "Deployed and configured Snort IDS to detect malicious activity. Mapped attack patterns to MITRE ATT&CK and analyzed associated risk impact.",
+      tags: ["Snort", "IDS", "MITRE ATT&CK"]
+    },
+    "proj_fim": {
+      type: "ULTIMATE PROJECT",
+      title: "FIM Solution",
+      stats: { "Feature": "Alert Generation", "Testing": "Red Teaming" },
+      desc: "Developed a File Integrity Monitoring solution supporting secure configuration validation. Generated alerts and validated remediation during simulated attacks.",
+      tags: ["FIM", "Red Teaming", "Remediation"]
     }
-    ctx.globalAlpha = 1;
+  };
+
+  // Interaction Logic
+  const nodes = document.querySelectorAll('.node');
+  const defaultMsg = document.getElementById('inspector-default');
+  const dataPanel = document.getElementById('inspector-data');
+  const pType = document.getElementById('panel-type');
+  const pTitle = document.getElementById('panel-title');
+  const pStats = document.getElementById('panel-stats');
+  const pDesc = document.getElementById('panel-desc');
+  const pTags = document.getElementById('panel-tags');
+
+  // Initialize with Root selected
+  updatePanel('root');
+
+  nodes.forEach(node => {
+    node.addEventListener('click', () => {
+      // Remove active class from all
+      nodes.forEach(n => n.classList.remove('active'));
+      // Add active to clicked
+      node.classList.add('active');
+      // Update panel
+      updatePanel(node.getAttribute('data-id'));
+    });
   });
-  requestAnimationFrame(drawParticles);
-}
-drawParticles();
 
-/* ═══════════════════════════════════════════
-   INTERSECTION OBSERVERS
-═══════════════════════════════════════════ */
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-}, { threshold: 0.1 });
-document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .timeline-item, .project-card, .cyber-form-wrap, .contact-right').forEach(el => revealObs.observe(el));
+  function updatePanel(id) {
+    const data = nodeData[id];
+    if(!data) return;
 
-const skillObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      const bar = e.target; const w = bar.dataset.width;
-      setTimeout(() => {
-        bar.style.width = w + '%';
-        setTimeout(() => bar.classList.add('filled'), 1300);
-      }, 200);
-      skillObs.unobserve(bar);
+    defaultMsg.style.display = 'none';
+    dataPanel.style.display = 'block';
+    
+    // Simple animation effect
+    dataPanel.style.opacity = '0';
+    setTimeout(() => { dataPanel.style.opacity = '1'; }, 50);
+
+    pType.textContent = data.type;
+    pTitle.textContent = data.title;
+    pDesc.textContent = data.desc;
+
+    // Build stats
+    pStats.innerHTML = '';
+    for (const [key, value] of Object.entries(data.stats)) {
+      pStats.innerHTML += `<div class="stat-row"><span class="stat-label">${key}</span><span class="stat-val">${value}</span></div>`;
     }
-  });
-}, { threshold: 0.3 });
-document.querySelectorAll('.skill-bar').forEach(b => skillObs.observe(b));
+
+    // Build tags
+    pTags.innerHTML = '';
+    data.tags.forEach(tag => {
+      pTags.innerHTML += `<span class="tech-tag">${tag}</span>`;
+    });
+  }
 </script>
+
 </body>
 </html>
