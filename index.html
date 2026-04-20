@@ -1,466 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DANY_OS // Cyber Defense Terminal</title>
-<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  /* =========================================
-     SYSTEM VARIABLES & BASE
-  ========================================= */
-  :root {
-    --sys-bg: #0d1117;
-    --sys-accent: #00ffcc;
-    --sys-text: #c9d1d9;
-    --sys-panel: #161b22;
-    --sys-border: #30363d;
-    --sys-red: #ff5555;
-    --sys-yellow: #f1fa8c;
-    --font-ui: 'Ubuntu', sans-serif;
-    --font-term: 'Fira Code', monospace;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dany Geo Johnson | SOC Analyst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           SOC COMMAND CENTER THEME VARIABLES
+        ========================================= */
+        :root {
+            --bg-base: #06090e;
+            --bg-surface: #0f172a;
+            --bg-surface-hover: #1e293b;
+            --cyan: #00e5ff;
+            --cyan-dim: rgba(0, 229, 255, 0.1);
+            --blue: #3b82f6;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-  
-  body {
-    background-color: var(--sys-bg);
-    color: var(--sys-text);
-    font-family: var(--font-ui);
-    overflow: hidden;
-    width: 100vw; height: 100vh;
-  }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  /* Scanline Overlay */
-  body::after {
-    content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 9999; background-size: 100% 2px, 3px 100%; pointer-events: none;
-  }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-  /* =========================================
-     BOOT SEQUENCE
-  ========================================= */
-  #boot-screen {
-    position: fixed; inset: 0; background: #000; color: #0f0;
-    font-family: var(--font-term); font-size: 14px; padding: 20px;
-    z-index: 10000; display: flex; flex-direction: column;
-    overflow: hidden;
-  }
-  .boot-line { margin-bottom: 5px; opacity: 0; animation: typeLine 0.1s forwards; }
-  @keyframes typeLine { to { opacity: 1; } }
-  #boot-screen.hidden { animation: fadeOut 0.5s forwards; pointer-events: none; }
-  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+        /* Subtle Security Grid Background */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: 
+                linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: -1;
+        }
 
-  /* =========================================
-     DESKTOP ENVIRONMENT
-  ========================================= */
-  #desktop {
-    position: relative; width: 100%; height: calc(100vh - 30px);
-    background: radial-gradient(circle at center, #111827 0%, #030712 100%);
-    overflow: hidden;
-  }
-  
-  /* Taskbar */
-  #taskbar {
-    height: 30px; background: rgba(13, 17, 23, 0.95); border-top: 1px solid var(--sys-border);
-    display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
-    font-size: 13px; z-index: 5000; position: relative; backdrop-filter: blur(5px);
-  }
-  .tb-left { font-weight: 700; color: var(--sys-accent); letter-spacing: 1px; }
-  .tb-right { display: flex; gap: 15px; color: #8b949e; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-base); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
 
-  /* Desktop Icons */
-  #icons {
-    display: flex; flex-direction: column; gap: 20px; padding: 20px; float: left;
-  }
-  .icon {
-    width: 80px; display: flex; flex-direction: column; align-items: center;
-    gap: 8px; cursor: pointer; border-radius: 5px; padding: 10px;
-    transition: background 0.2s;
-  }
-  .icon:hover { background: rgba(255,255,255,0.1); }
-  .icon-img { font-size: 32px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
-  .icon-text { font-size: 12px; text-shadow: 1px 1px 2px #000; text-align: center; }
+        /* Typography */
+        h1, h2, h3, h4 { font-weight: 700; color: var(--text-main); }
+        .mono { font-family: var(--font-mono); }
+        .text-cyan { color: var(--cyan); }
+        .text-amber { color: var(--amber); }
 
-  /* Executive Escape Hatch */
-  .escape-hatch {
-    position: absolute; top: 20px; right: 20px;
-    background: rgba(255, 85, 85, 0.1); border: 1px solid var(--sys-red);
-    color: var(--sys-red); padding: 10px 20px; border-radius: 4px;
-    font-family: var(--font-term); font-size: 12px; font-weight: bold;
-    cursor: pointer; text-decoration: none; z-index: 4000;
-    transition: all 0.2s; box-shadow: 0 0 15px rgba(255,85,85,0.1);
-  }
-  .escape-hatch:hover {
-    background: var(--sys-red); color: #000; box-shadow: 0 0 20px rgba(255,85,85,0.4);
-  }
+        /* Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        section { padding: 90px 0; border-bottom: 1px solid var(--border-color); }
+        section:last-of-type { border-bottom: none; }
+        
+        .section-header {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--cyan);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .section-header::before { content: '>'; color: var(--text-muted); }
+        .section-title { font-size: 2.2rem; margin-bottom: 40px; letter-spacing: -0.5px; }
 
-  /* =========================================
-     WINDOW SYSTEM
-  ========================================= */
-  .window {
-    position: absolute; width: 650px; max-width: 95vw; background: var(--sys-panel);
-    border: 1px solid var(--sys-border); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    display: none; flex-direction: column; overflow: hidden; z-index: 100;
-  }
-  .window.active { display: flex; }
-  
-  .win-header {
-    background: #0d1117; padding: 8px 15px; display: flex; justify-content: space-between;
-    align-items: center; border-bottom: 1px solid var(--sys-border); cursor: grab;
-  }
-  .win-header:active { cursor: grabbing; }
-  .win-title { font-size: 13px; font-weight: 500; color: #8b949e; font-family: var(--font-term); }
-  .win-controls { display: flex; gap: 8px; }
-  .win-btn { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
-  .btn-close { background: var(--sys-red); }
-  .btn-min { background: var(--sys-yellow); }
-  .btn-max { background: #50fa7b; }
+        /* Navbar */
+        nav {
+            position: fixed;
+            top: 0; width: 100%;
+            background: rgba(6, 9, 14, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 16px 0;
+            transition: all 0.3s ease;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-main); text-decoration: none; font-weight: 700; }
+        .nav-links { display: flex; gap: 32px; list-style: none; }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--cyan); }
 
-  .win-content {
-    flex: 1; padding: 20px; overflow-y: auto; height: 450px;
-    font-family: var(--font-term); font-size: 14px; line-height: 1.6;
-    color: var(--sys-text); user-select: text;
-  }
-  .win-content::-webkit-scrollbar { width: 8px; }
-  .win-content::-webkit-scrollbar-track { background: var(--sys-bg); }
-  .win-content::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--cyan-dim);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+        }
+        .btn-primary:hover {
+            background: var(--cyan);
+            color: var(--bg-base);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+        }
 
-  /* =========================================
-     SPECIFIC APPS
-  ========================================= */
-  /* Terminal */
-  #win-terminal .win-content { background: rgba(5, 5, 10, 0.95); color: #00ff00; }
-  .term-prompt { color: var(--sys-accent); font-weight: bold; }
-  .term-path { color: #bd93f9; }
-  
-  /* Resume (Text Editor) */
-  #win-resume .win-content { background: #1e1e1e; color: #d4d4d4; font-size: 13px; }
-  .kw { color: #569cd6; font-weight: bold; } /* keyword */
-  .str { color: #ce9178; } /* string */
-  .fn { color: #dcdcaa; } /* function */
-  .cmt { color: #6a9955; font-style: italic; } /* comment */
-  .prop { color: #9cdcfe; } /* property */
+        /* Hero Section */
+        #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; border-bottom: 1px solid var(--border-color); }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--blue);
+            margin-bottom: 24px;
+        }
+        .status-dot { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; box-shadow: 0 0 8px var(--blue); animation: blink 2s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        
+        .hero-title { font-size: clamp(3rem, 5vw, 4.5rem); line-height: 1.1; margin-bottom: 16px; letter-spacing: -1px; }
+        .hero-subtitle { font-family: var(--font-mono); font-size: 1.1rem; color: var(--cyan); margin-bottom: 30px; }
+        .hero-desc { 
+            max-width: 650px; 
+            color: var(--text-muted); 
+            margin-bottom: 40px; 
+            font-size: 1.1rem; 
+            line-height: 1.7;
+            padding-left: 16px;
+            border-left: 2px solid var(--border-color);
+        }
 
-  /* Projects (File Explorer) */
-  #win-projects .win-content { 
-    background: #0d1117; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-    gap: 20px; align-content: flex-start; 
-  }
-  .folder { 
-    background: #161b22; border: 1px solid var(--sys-border); padding: 15px; 
-    border-radius: 6px; text-align: left; cursor: pointer; transition: 0.2s; position: relative;
-    text-decoration: none; color: var(--sys-text); display: block;
-  }
-  .folder:hover { border-color: var(--sys-accent); background: #1f2428; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,255,204,0.1); }
-  .folder-icon { font-size: 30px; margin-bottom: 10px; }
-  .folder-name { font-size: 13px; font-family: var(--font-term); font-weight: bold; color: var(--sys-accent); margin-bottom: 5px; }
-  .folder-desc { font-size: 11px; font-family: var(--font-ui); color: #8b949e; line-height: 1.4; }
+        /* Tech Chips (Terminal Style) */
+        .chip-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+        .tech-chip {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+        .tech-chip:hover { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
 
-  /* Mail (Contact) */
-  #win-mail { width: 450px; }
-  .mail-form { display: flex; flex-direction: column; gap: 15px; font-family: var(--font-ui); }
-  .mail-input { background: #0d1117; border: 1px solid var(--sys-border); color: #fff; padding: 10px; border-radius: 4px; font-family: var(--font-ui); }
-  .mail-input:focus { outline: none; border-color: var(--sys-accent); }
-  textarea.mail-input { min-height: 100px; resize: none; }
-  .mail-btn { background: var(--sys-text); color: #000; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-  .mail-btn:hover { background: var(--sys-accent); box-shadow: 0 0 10px rgba(0,255,204,0.3); }
-  .contact-block { background: #0d1117; border: 1px solid var(--sys-border); padding: 15px; border-radius: 4px; margin-bottom: 20px; font-family: var(--font-term); font-size: 12px; color: #8b949e; }
-  .contact-block span { color: #fff; display: block; margin-bottom: 5px; font-size: 14px; }
+        /* Experience Timeline */
+        .timeline { border-left: 2px solid var(--border-color); padding-left: 32px; margin-left: 8px; }
+        .timeline-item { position: relative; margin-bottom: 40px; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -39px; top: 6px;
+            width: 12px; height: 12px;
+            background: var(--bg-base);
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        .timeline-item:hover::before { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+        
+        .exp-role { font-size: 1.25rem; font-weight: 600; color: var(--text-main); margin-bottom: 4px; }
+        .exp-company { font-family: var(--font-mono); font-size: 0.9rem; color: var(--cyan); margin-bottom: 4px; }
+        .exp-date { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+        .exp-desc { color: var(--text-muted); list-style-type: none; }
+        .exp-desc li { margin-bottom: 10px; position: relative; padding-left: 20px; line-height: 1.6; }
+        .exp-desc li::before { content: '▹'; position: absolute; left: 0; color: var(--cyan); font-family: var(--font-mono); }
+        .exp-highlight { color: var(--text-main); font-weight: 600; }
 
-</style>
+        /* Project Cards (Dashboard Style) */
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        
+        .project-link { text-decoration: none; color: inherit; display: block; }
+        .dashboard-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 30px;
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .dashboard-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--cyan);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        .project-link:hover .dashboard-card { 
+            transform: translateY(-4px); 
+            border-color: #334155; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+        .project-link:hover .dashboard-card::before { transform: scaleX(1); }
+        
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-icon { font-size: 1.5rem; }
+        .github-icon { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+        .project-link:hover .github-icon { color: var(--cyan); }
+        
+        .card-title { font-size: 1.15rem; margin-bottom: 12px; color: var(--text-main); }
+        .card-body { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.6; flex-grow: 1; }
+
+        /* Education & Certs */
+        .edu-flex { display: flex; flex-direction: column; gap: 20px; }
+        .edu-item { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20px; border-bottom: 1px dashed var(--border-color); }
+        .edu-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .edu-title { font-weight: 600; color: var(--text-main); }
+        .edu-inst { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+        .edu-date { font-family: var(--font-mono); font-size: 0.85rem; color: var(--cyan); }
+
+        /* Contact Section & Form */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 60px; align-items: start; }
+        
+        .contact-info-block { display: flex; flex-direction: column; gap: 30px; }
+        .info-item { display: flex; flex-direction: column; gap: 6px; }
+        .info-label { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        .info-val { font-size: 1.1rem; color: var(--text-main); text-decoration: none; transition: color 0.2s; }
+        .info-val:hover { color: var(--cyan); }
+
+        .secure-form {
+            background: var(--bg-surface);
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        .form-group { margin-bottom: 24px; }
+        .form-label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--cyan);
+            margin-bottom: 8px;
+        }
+        .form-control {
+            width: 100%;
+            background: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 14px 16px;
+            border-radius: 4px;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--cyan);
+            box-shadow: 0 0 0 1px var(--cyan);
+        }
+        textarea.form-control { resize: vertical; min-height: 140px; }
+        .btn-submit { width: 100%; font-size: 1rem; padding: 14px; }
+
+        footer { text-align: center; padding: 40px 0; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); }
+
+        @media (max-width: 900px) {
+            .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+        }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .nav-links { display: none; }
+            section { padding: 70px 0; }
+        }
+    </style>
 </head>
 <body>
 
-  <div id="boot-screen">
-    <div id="boot-log"></div>
-  </div>
-
-  <div id="desktop">
-    
-    <a href="Dany_Geo_Johnson_Resume.pdf" target="_blank" class="escape-hatch">
-      [ DOWNLOAD RAW_RESUME.PDF ]
-    </a>
-
-    <div id="icons">
-      <div class="icon" ondblclick="openWindow('win-terminal')">
-        <div class="icon-img">💻</div>
-        <div class="icon-text">terminal</div>
-      </div>
-      <div class="icon" ondblclick="openWindow('win-resume')">
-        <div class="icon-img">📝</div>
-        <div class="icon-text">sys_profile.json</div>
-      </div>
-      <div class="icon" ondblclick="openWindow('win-projects')">
-        <div class="icon-img">📁</div>
-        <div class="icon-text">/opt/projects/</div>
-      </div>
-      <div class="icon" ondblclick="openWindow('win-mail')">
-        <div class="icon-img">✉️</div>
-        <div class="icon-text">secure_comm.exe</div>
-      </div>
-    </div>
-
-    <div class="window" id="win-terminal" style="top: 80px; left: 120px;">
-      <div class="win-header">
-        <div class="win-title">dany@soc-core:~</div>
-        <div class="win-controls">
-          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-terminal')"></div>
+    <nav>
+        <div class="container nav-inner">
+            <a href="#" class="logo">DGJ<span class="text-cyan">_</span></a>
+            <ul class="nav-links">
+                <li><a href="#about">~/about</a></li>
+                <li><a href="#experience">~/experience</a></li>
+                <li><a href="#projects">~/projects</a></li>
+                <li><a href="#skills">~/skills</a></li>
+                <li><a href="#contact">~/contact</a></li>
+            </ul>
         </div>
-      </div>
-      <div class="win-content" id="term-content">
-        </div>
-    </div>
+    </nav>
 
-    <div class="window" id="win-resume" style="top: 40px; left: 180px;">
-      <div class="win-header">
-        <div class="win-title">vscode - sys_profile.json</div>
-        <div class="win-controls">
-          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-resume')"></div>
-        </div>
-      </div>
-      <div class="win-content">
-<pre>
-{
-  <span class="prop">"target_profile"</span>: {
-    <span class="prop">"name"</span>: <span class="str">"Dany Geo Johnson"</span>,
-    <span class="prop">"role"</span>: <span class="str">"SOC Analyst"</span>,
-    <span class="prop">"certifications"</span>: [<span class="str">"CEH"</span>, <span class="str">"Adv. Diploma Cyber Defense"</span>]
-  },
+    <main class="container">
+        <section id="hero">
+            <div>
+                <div class="status-badge"><span class="status-dot"></span> SYSTEM_STATUS: ACTIVE</div>
+                <h1 class="hero-title">Dany Geo Johnson</h1>
+                <h2 class="hero-subtitle">>_ SOC Analyst & Cyber Defense Specialist</h2>
+                
+                <p class="hero-desc">
+                    SOC Analyst with hands-on experience in 24x7x365 SIEM monitoring and incident triage. Proven ability to analyze security events, validate vulnerabilities against the OWASP Top 10, and map adversarial behavior to the MITRE ATT&CK framework to reduce organizational risk.
+                </p>
+                
+                <a href="#contact" class="btn btn-primary">INITIATE_CONTACT</a>
+            </div>
+        </section>
 
-  <span class="cmt">/* * EXECUTIVE SUMMARY:
-   * SOC Analyst with hands-on experience in 24x7x365 SIEM 
-   * monitoring (Splunk, Wazuh) and incident triage. Proven 
-   * ability to analyze security events, validate vulnerabilities 
-   * against OWASP Top 10, and map adversarial behavior to the 
-   * MITRE ATT&CK framework to reduce organizational risk.
-   */</span>
+        <section id="experience">
+            <div class="section-header">sys.logs.experience</div>
+            <h2 class="section-title">Professional Experience</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="exp-role">Cybersecurity Analyst Intern</div>
+                    <div class="exp-company">CODTECH IT SOLUTIONS</div>
+                    <div class="exp-date">Aug 2025 - Dec 2025 | Kollam, Kerala</div>
+                    <ul class="exp-desc">
+                        <li>Monitored and triaged <span class="exp-highlight">low-to-medium security alerts daily</span> using Splunk and Wazuh, maintaining strict SLA compliance across a 24x7x365 environment.</li>
+                        <li>Escalated high-fidelity incidents to L2/L3 engineering teams, <span class="exp-highlight">reducing false-positive fatigue</span> by filtering out known benign network traffic.</li>
+                        <li>Investigated anomalies using documented playbooks and maintained detailed SIEM/CDC work logs to support continuous audit trails and quality reviews.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
 
-  <span class="prop">"experience_logs"</span>: [
-    {
-      <span class="prop">"company"</span>: <span class="str">"CODTECH IT SOLUTIONS"</span>,
-      <span class="prop">"title"</span>: <span class="str">"Cybersecurity Analyst Intern"</span>,
-      <span class="prop">"timeline"</span>: <span class="str">"Aug 2025 - Dec 2025"</span>,
-      <span class="prop">"execution_metrics"</span>: [
-        <span class="str">"Monitored and triaged low-to-medium security alerts daily using Splunk and Wazuh, maintaining strict SLA compliance."</span>,
-        <span class="str">"Escalated high-fidelity incidents to L2/L3 engineering teams, reducing false-positive fatigue."</span>,
-        <span class="str">"Maintained SIEM/CDC work logs to support audit trails and quality reviews."</span>
-      ]
-    }
-  ],
+        <section id="projects">
+            <div class="section-header">sys.files.projects</div>
+            <h2 class="section-title">Security Implementations</h2>
+            
+            <div class="grid-3">
+                <a href="https://github.com/your-username/fim-tool" target="_blank" class="project-link">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-icon">📁</span>
+                            <span class="github-icon">View Repository ↗</span>
+                        </div>
+                        <h3 class="card-title">File Integrity Monitoring Tool</h3>
+                        <p class="card-body">Developed a Python-based File Integrity Monitor utilizing SHA-256 hashing to detect unauthorized baseline modifications in real-time. Generated alerts and validated remediation during simulated red teaming scenarios.</p>
+                        <div class="chip-container">
+                            <span class="tech-chip">FIM</span>
+                            <span class="tech-chip">SHA-256</span>
+                            <span class="tech-chip">Python</span>
+                        </div>
+                    </div>
+                </a>
 
-  <span class="prop">"technical_stack"</span>: {
-    <span class="prop">"SIEM_Tools"</span>: [<span class="str">"Splunk"</span>, <span class="str">"Wazuh"</span>],
-    <span class="prop">"Threat_Hunting"</span>: [<span class="str">"Wireshark"</span>, <span class="str">"PCAP Analysis"</span>, <span class="str">"Snort IDS"</span>],
-    <span class="prop">"Frameworks"</span>: [<span class="str">"MITRE ATT&CK"</span>, <span class="str">"OWASP Top 10"</span>]
-  }
-}
-</pre>
-      </div>
-    </div>
+                <a href="https://github.com/your-username/snort-ids" target="_blank" class="project-link">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-icon">🕸️</span>
+                            <span class="github-icon">View Repository ↗</span>
+                        </div>
+                        <h3 class="card-title">Network Intrusion Detection</h3>
+                        <p class="card-body">Deployed Snort IDS to detect malicious activity across layered (n-tier) systems. Wrote custom rules mapped directly to specific MITRE ATT&CK techniques to analyze associated risk impact.</p>
+                        <div class="chip-container">
+                            <span class="tech-chip">Snort IDS</span>
+                            <span class="tech-chip">MITRE ATT&CK</span>
+                        </div>
+                    </div>
+                </a>
 
-    <div class="window" id="win-projects" style="top: 130px; left: 250px;">
-      <div class="win-header">
-        <div class="win-title">/opt/projects/ - Click to access repositories</div>
-        <div class="win-controls">
-          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-projects')"></div>
-        </div>
-      </div>
-      <div class="win-content">
-        
-        <a href="https://github.com/your-username/wazuh-repo" target="_blank" class="folder">
-          <div class="folder-icon">🛡️</div>
-          <div class="folder-name">Wazuh_Deployment</div>
-          <div class="folder-desc">Implemented Wazuh-based monitoring for enterprise environments. Configured custom decoders and rules for risk assessment.</div>
-        </a>
-        
-        <a href="https://github.com/your-username/snort-repo" target="_blank" class="folder">
-          <div class="folder-icon">🕸️</div>
-          <div class="folder-name">Snort_IDS_Rules</div>
-          <div class="folder-desc">Deployed Snort IDS to detect malicious activity. Wrote custom rules mapped directly to specific MITRE ATT&CK techniques.</div>
-        </a>
-        
-        <a href="https://github.com/your-username/fim-repo" target="_blank" class="folder">
-          <div class="folder-icon">📁</div>
-          <div class="folder-name">FIM_Hash_Tool</div>
-          <div class="folder-desc">Developed a File Integrity Monitor utilizing SHA-256 hashing to detect unauthorized baseline modifications in real-time.</div>
-        </a>
+                <a href="https://github.com/your-username/wazuh-monitoring" target="_blank" class="project-link">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-icon">🛡️</span>
+                            <span class="github-icon">View Repository ↗</span>
+                        </div>
+                        <h3 class="card-title">Wazuh Security Monitoring</h3>
+                        <p class="card-body">Implemented Wazuh-based monitoring for enterprise and cloud environments. Configured custom decoders and rules to support risk assessment and security architecture evaluation.</p>
+                        <div class="chip-container">
+                            <span class="tech-chip">Wazuh</span>
+                            <span class="tech-chip">SIEM</span>
+                            <span class="tech-chip">Cloud Security</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
 
-      </div>
-    </div>
+        <section id="skills" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 60px;">
+            <div>
+                <div class="section-header">sys.modules.capabilities</div>
+                <h2 class="section-title" style="margin-bottom: 20px;">Technical Stack</h2>
+                
+                <h3 style="font-size: 1rem; color: var(--text-main); margin: 20px 0 10px;">Core Competencies</h3>
+                <div class="chip-container">
+                    <span class="tech-chip">SOC Operations (L1/L2)</span>
+                    <span class="tech-chip">Incident Triage & Response</span>
+                    <span class="tech-chip">Log Analysis & Correlation</span>
+                    <span class="tech-chip">Network Traffic Analysis</span>
+                    <span class="tech-chip">Phishing & Malware Analysis</span>
+                    <span class="tech-chip">Basic VAPT</span>
+                </div>
 
-    <div class="window" id="win-mail" style="top: 60px; left: 350px;">
-      <div class="win-header">
-        <div class="win-title">secure_comm.exe - Establish Uplink</div>
-        <div class="win-controls">
-          <div class="win-btn btn-min"></div><div class="win-btn btn-max"></div><div class="win-btn btn-close" onclick="closeWindow('win-mail')"></div>
-        </div>
-      </div>
-      <div class="win-content">
-        <div class="contact-block">
-          EMAIL_ADDRESS <br><span><a href="mailto:danygeo13@gmail.com" style="color:var(--sys-accent); text-decoration:none;">danygeo13@gmail.com</a></span>
-          PHONE_COMM <br><span>+91 9526905931</span>
-          LINKEDIN_PROFILE <br><span><a href="https://linkedin.com/in/dany-geo-johnson" target="_blank" style="color:var(--sys-accent); text-decoration:none;">linkedin.com/in/dany-geo-johnson</a></span>
-        </div>
+                <h3 style="font-size: 1rem; color: var(--text-main); margin: 24px 0 10px;">Tools & Frameworks</h3>
+                <div class="chip-container">
+                    <span class="tech-chip">Splunk</span>
+                    <span class="tech-chip">Wazuh</span>
+                    <span class="tech-chip">Wireshark</span>
+                    <span class="tech-chip">Snort IDS</span>
+                    <span class="tech-chip">Metasploit</span>
+                    <span class="tech-chip">MITRE ATT&CK</span>
+                    <span class="tech-chip">OWASP Top 10</span>
+                </div>
+            </div>
 
-        <form class="mail-form" action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
-          <input type="text" name="name" class="mail-input" placeholder="Origin ID (Name/Company)" required>
-          <input type="email" name="email" class="mail-input" placeholder="Return Address (Email)" required>
-          <textarea name="message" class="mail-input" placeholder="Enter encrypted payload details here..." required></textarea>
-          <button type="submit" class="mail-btn">EXECUTE TRANSMISSION</button>
-        </form>
-      </div>
-    </div>
-  </div>
+            <div>
+                <div class="section-header">sys.records.education</div>
+                <h2 class="section-title" style="margin-bottom: 20px;">Education & Certs</h2>
+                
+                <div class="edu-flex">
+                    <div class="edu-item">
+                        <div>
+                            <div class="edu-title">B.Tech, Computer Science</div>
+                            <div class="edu-inst">Amrita School of Engineering</div>
+                        </div>
+                        <div class="edu-date">2020 - 2024</div>
+                    </div>
+                    
+                    <div class="edu-item">
+                        <div>
+                            <div class="edu-title">Senior Secondary</div>
+                            <div class="edu-inst">G.B.H.S.S Chavara</div>
+                        </div>
+                        <div class="edu-date">2018 - 2020</div>
+                    </div>
+                </div>
 
-  <div id="taskbar">
-    <div class="tb-left">DANY_OS // KERNEL v2.0</div>
-    <div class="tb-right">
-      <span id="tb-time">00:00</span>
-      <span>📶 SECURE</span>
-      <span>🔋 100%</span>
-    </div>
-  </div>
+                <h3 style="font-size: 1rem; color: var(--text-main); margin: 30px 0 15px;">Certifications</h3>
+                <ul class="exp-desc" style="padding-left: 0;">
+                    <li>Certified Ethical Hacker (CEH)</li>
+                    <li>Advanced Diploma in Cyber Defense</li>
+                    <li>Tata Cybersecurity Analyst Simulation</li>
+                    <li>Intro to Dark Web, Anonymity & Cryptocurrency</li>
+                </ul>
+            </div>
+        </section>
 
-<script>
-  /* =========================================
-     BOOT SEQUENCE LOGIC
-  ========================================= */
-  const bootLines = [
-    "BIOS Check .............................. OK",
-    "Loading Kernel .......................... OK",
-    "Mounting Root File System ............... OK",
-    "Initializing Hardware ................... OK",
-    "Starting Security Protocols ............. OK",
-    "Starting SOC Monitoring Daemon .......... OK",
-    "Checking SIEM Connections ............... [SPLUNK: OK] [WAZUH: OK]",
-    "Loading User Interface .................. OK",
-    "Welcome to DANY_OS."
-  ];
+        <section id="contact">
+            <div class="section-header">sys.network.connect</div>
+            <h2 class="section-title">Secure Transmission</h2>
 
-  const bootLog = document.getElementById('boot-log');
-  const bootScreen = document.getElementById('boot-screen');
-  
-  let lineIndex = 0;
-  function printBootLine() {
-    if (lineIndex < bootLines.length) {
-      const p = document.createElement('div');
-      p.className = 'boot-line';
-      p.innerText = bootLines[lineIndex];
-      bootLog.appendChild(p);
-      lineIndex++;
-      setTimeout(printBootLine, Math.random() * 200 + 50);
-    } else {
-      setTimeout(() => {
-        bootScreen.classList.add('hidden');
-        // Open terminal automatically after boot
-        setTimeout(() => { openWindow('win-terminal'); runTerminal(); }, 800);
-      }, 500);
-    }
-  }
-  
-  // Start Boot
-  window.onload = () => { setTimeout(printBootLine, 500); };
+            <div class="contact-grid">
+                <div class="contact-info-block">
+                    <div class="info-item">
+                        <span class="info-label">EMAIL_ADDRESS</span>
+                        <a href="mailto:danygeo13@gmail.com" class="info-val">danygeo13@gmail.com</a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">PHONE_COMM</span>
+                        <a href="tel:+919526905931" class="info-val">+91 9526905931</a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">LINKEDIN_PROFILE</span>
+                        <a href="https://linkedin.com/in/dany-geo-johnson" target="_blank" class="info-val">linkedin.com/in/dany-geo-johnson</a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">PHYSICAL_LOCATION</span>
+                        <span class="info-val" style="color: var(--text-main); cursor: default;">Kollam, Kerala</span>
+                    </div>
+                </div>
 
-  /* =========================================
-     CLOCK
-  ========================================= */
-  function updateTime() {
-    const now = new Date();
-    document.getElementById('tb-time').innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  }
-  setInterval(updateTime, 1000);
-  updateTime();
+                <div class="secure-form">
+                    <form action="YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
+                        <div class="form-group">
+                            <label class="form-label">>_ Enter_Name</label>
+                            <input type="text" name="name" class="form-control" required placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">>_ Enter_Email</label>
+                            <input type="email" name="email" class="form-control" required placeholder="john@company.com">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 30px;">
+                            <label class="form-label">>_ Enter_Message</label>
+                            <textarea name="message" class="form-control" required placeholder="Type your message here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-submit">EXECUTE_SUBMIT</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
 
-  /* =========================================
-     WINDOW MANAGEMENT (DRAG & DROP)
-  ========================================= */
-  let highestZ = 100;
+    <footer>
+        <p>EOF // Designed & Built by Dany Geo Johnson © 2025</p>
+    </footer>
 
-  function openWindow(id) {
-    const win = document.getElementById(id);
-    win.classList.add('active');
-    bringToFront(win);
-  }
-
-  function closeWindow(id) {
-    document.getElementById(id).classList.remove('active');
-  }
-
-  function bringToFront(win) {
-    highestZ++;
-    win.style.zIndex = highestZ;
-  }
-
-  const windows = document.querySelectorAll('.window');
-  windows.forEach(win => {
-    win.addEventListener('mousedown', () => bringToFront(win));
-    
-    const header = win.querySelector('.win-header');
-    let isDragging = false, startX, startY, startLeft, startTop;
-
-    header.addEventListener('mousedown', (e) => {
-      isDragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      startLeft = parseInt(window.getComputedStyle(win).left, 10);
-      startTop = parseInt(window.getComputedStyle(win).top, 10);
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      win.style.left = `${startLeft + dx}px`;
-      win.style.top = `${startTop + dy}px`;
-    });
-
-    document.addEventListener('mouseup', () => { isDragging = false; });
-  });
-
-  /* =========================================
-     TERMINAL TYPING EFFECT
-  ========================================= */
-  const termContent = document.getElementById('term-content');
-  const termLines = [
-    { type: 'cmd', text: 'whoami' },
-    { type: 'out', text: 'Dany Geo Johnson - SOC Analyst' },
-    { type: 'cmd', text: 'cat summary.txt' },
-    { type: 'out', text: 'SOC Analyst with hands-on experience in 24x7x365 SIEM monitoring and incident triage. Capable of mapping adversarial behavior to MITRE ATT&CK to reduce organizational risk.' },
-    { type: 'cmd', text: 'ls /skills/core/' },
-    { type: 'out', text: 'Splunk  Wazuh  Wireshark  Snort  MITRE_ATT&CK  OWASP' },
-    { type: 'cmd', text: './init_portfolio.sh' },
-    { type: 'out', text: 'Portfolio initialized. Double-click icons on desktop to explore.' },
-  ];
-
-  async function runTerminal() {
-    termContent.innerHTML = '';
-    for (const line of termLines) {
-      if (line.type === 'cmd') {
-        const lineEl = document.createElement('div');
-        lineEl.innerHTML = `<span class="term-prompt">dany@soc-core</span>:<span class="term-path">~</span>$ <span class="typing"></span>`;
-        termContent.appendChild(lineEl);
-        const typingEl = lineEl.querySelector('.typing');
-        
-        for (let i = 0; i < line.text.length; i++) {
-          typingEl.innerHTML += line.text[i];
-          await new Promise(r => setTimeout(r, 40));
-        }
-        await new Promise(r => setTimeout(r, 400));
-      } else {
-        const lineEl = document.createElement('div');
-        lineEl.style.marginBottom = '15px';
-        lineEl.innerText = line.text;
-        termContent.appendChild(lineEl);
-        await new Promise(r => setTimeout(r, 200));
-      }
-    }
-    const finalEl = document.createElement('div');
-    finalEl.innerHTML = `<span class="term-prompt">dany@soc-core</span>:<span class="term-path">~</span>$ <span style="animation: blink 1s infinite">_</span>`;
-    termContent.appendChild(finalEl);
-  }
-
-</script>
 </body>
 </html>
